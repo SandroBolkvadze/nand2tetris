@@ -21,16 +21,16 @@
 // 
 //
 // function FILL(color):
-//     start_address = @SCREEN
+//     address = @SCREEN
 //     count = 8192
 // 
 //     while count > 0:
 //         DECREMENT count
 // 
-//         current_address = start_address + count 
-// 
-//         MEM[current_address] = color
-// 
+//         MEM[address] = color
+//          
+//         INCREMENT address
+//
 //     return
 
 
@@ -62,7 +62,7 @@
     @SCREEN
     D=A
 
-    @start_address
+    @address
     M=D
 
     @8192
@@ -81,21 +81,16 @@
     @count
     M=M-1
 
-    @start_address
-    D=M
-
-    @count
-    D=D+M
-
-    @current_address
-    M=D
-
     @color
     D=M
 
-    @current_address
+    @address
     A=M
+    
     M=D
+
+    @address
+    M=M+1
 
     @FILL_LOOP
     0; JMP
@@ -103,4 +98,3 @@
 (FILL_RETURN)
     @LISTEN
     0; JMP
-
