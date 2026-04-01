@@ -21,7 +21,7 @@
 // 
 //     return result
 
-
+// Multiply two numbers.
 (MULT)
     @R1
     D=M
