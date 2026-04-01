@@ -12,14 +12,14 @@
 
 // function MULT(a, b):
 //     count = b
-//     c = 0
+//     result = 0
 // 
 //     while count > 0:
 //         DECREMENT count
 // 
-//         c = c + a
+//         result = result + a
 // 
-//     return c
+//     return result
 
 
 (MULT)
