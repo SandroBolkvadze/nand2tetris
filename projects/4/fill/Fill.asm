@@ -19,6 +19,7 @@
 // 
 //         call FILL(color)
 // 
+//
 // function FILL(color):
 //     start_address = @SCREEN
 //     count = 8192
@@ -56,7 +57,7 @@
     0; JMP
 
 
-// Color screen in @color.
+// Color screen with @color.
 (FILL)
     @SCREEN
     D=A
