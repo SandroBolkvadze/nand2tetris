@@ -12,7 +12,6 @@ _TEST_PROGRAMS = ["empty", "addL", "maxL", "rectL", "pongL", "max", "rect", "pon
 @pytest.mark.parametrize("program", _TEST_PROGRAMS)
 def test_should_assemble(program: str, asm_directory: Path) -> None:
     asm_file = str(asm_directory.joinpath(f"{program}.asm"))
-
     run_assembler(asm_file)
 
     assert filecmp.cmp(
