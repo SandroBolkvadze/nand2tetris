@@ -28,7 +28,7 @@ class VmProgram:  # TODO: your work for Projects 7 and 8 starts here
 
         if len(paths) > 1:
             asm.extend(["@256", "D=A", "@SP", "M=D"])
-            asm.extend(vm_call("Os", "Sys.init", 0, 0).splitlines())
+            asm.extend(vm_call("OS", "Sys.init", 0, 0).splitlines())
 
         for path in paths:
             asm.extend(DefaultVmTranslator(path.stem).translate(File(path).load()))

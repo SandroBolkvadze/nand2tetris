@@ -82,8 +82,6 @@ def vm_call(
         ({ret_label})
     """
 
-    return asm
-
 def vm_function(function_name: str, n_vars: int) -> str:
     function = f"""
         ({function_name})
