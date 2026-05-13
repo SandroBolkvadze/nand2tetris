@@ -19,4 +19,4 @@ class VmLabelTranslator:
 
         asm = f"({self.state.filename}.{self.state.current_function}${label})"
 
-        return [token.strip() for token in asm.splitlines() if len(token)]
+        return [line.strip() for line in asm.splitlines() if len(line)]

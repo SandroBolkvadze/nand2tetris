@@ -37,7 +37,7 @@ class VmPushTranslator:
             case _:
                 raise Exception(f"Unknown command <{line}>")
 
-        return [token.strip() for token in asm.splitlines() if len(token)]
+        return [line.strip() for line in asm.splitlines() if len(line)]
 
 
 def push_constant(i: int) -> str:

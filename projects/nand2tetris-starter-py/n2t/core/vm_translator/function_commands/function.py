@@ -40,7 +40,7 @@ class VmFunctionTranslator:
             case _:
                 raise Exception(f"Command <{line}> not found")
 
-        return [token.strip() for token in asm.splitlines() if len(token)]
+        return [line.strip() for line in asm.splitlines() if len(line)]
 
 
 def vm_call(caller: str, callee: str, callee_nargs: int, caller_ret_count: int) -> str:
