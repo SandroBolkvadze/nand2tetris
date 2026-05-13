@@ -19,4 +19,4 @@ class VmBootstrapGenerator:
 
         asm += vm_call("OS", "Sys.init", 0, 0)
 
-        return [token.strip() for token in asm.splitlines() if len(token)]
+        return [line.strip() for line in asm.splitlines() if len(line)]
