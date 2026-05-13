@@ -5,23 +5,8 @@ from typing import Iterable, Protocol
 
 _COMMENT = "//"
 
-
-class TranslatorChain(Protocol):
-    def process(self, _vm_instructions: Iterable[str]) -> Iterable[str]:
-        pass
-
-
-@dataclass
-class Identity:
-    next: TranslatorChain = field(default=None)
-
-    def process(self, _vm_instructions: Iterable[str]) -> Iterable[str]:
-        return _vm_instructions
-
-
 @dataclass
 class Preprocessor:
-    next: TranslatorChain = field(default_factory=Identity)
 
     def process(self, _vm_instructions: Iterable[str]) -> Iterable[str]:
         sanitized = []
@@ -36,4 +21,4 @@ class Preprocessor:
             if len(line) != 0:
                 sanitized.append(line)
 
-        return self.next.process(sanitized)
+        return sanitized

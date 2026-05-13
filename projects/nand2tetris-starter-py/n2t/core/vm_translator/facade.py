@@ -6,7 +6,7 @@ from n2t.core.vm_translator.branch import VmBranchTranslator
 from n2t.core.vm_translator.function import VmFunctionTranslator
 from n2t.core.vm_translator.label import VmLabelTranslator
 from n2t.core.vm_translator.pop import VmPopTranslator
-from n2t.core.vm_translator.preprocessor import Preprocessor
+from n2t.core.vm_translator.clean import Preprocessor
 from n2t.core.vm_translator.push import VmPushTranslator
 from n2t.core.vm_translator.state import VmTranslatorState
 
