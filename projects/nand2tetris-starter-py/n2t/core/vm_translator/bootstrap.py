@@ -7,17 +7,16 @@ from n2t.core.vm_translator.function import vm_call
 @dataclass
 class VmBootstrapGenerator:
     def generate(self) -> Iterable[str]:
-        asm = []
+        asm = ""
 
-        asm.extend(
-            """
+        asm += """
+            // set SP = 256
             @256
             D=A
             @SP
             M=D
-        """.splitlines()
-        )
+        """
 
-        asm.extend(vm_call("OS", "Sys.init", 0, 0).splitlines())
+        asm += vm_call("OS", "Sys.init", 0, 0)
 
-        return asm
+        return [token.strip() for token in asm.splitlines() if len(token)]

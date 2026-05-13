@@ -24,12 +24,12 @@ class VmTranslator:
         return cls(filename)
 
     def translate(self, _vm_instructions: Iterable[str]) -> Iterable[str]:
-        _vm_instructions_sanitized = Preprocessor().process(_vm_instructions)
         state = VmTranslatorState(filename=self.filename)
 
+        _vm_instructions_preprocessed = Preprocessor().process(_vm_instructions)
         asm: list[str] = []
 
-        for line in _vm_instructions_sanitized:
+        for line in _vm_instructions_preprocessed:
             tokens = line.split()
 
             if tokens[0] in _ARITHMETIC_COMMANDS:
@@ -47,4 +47,4 @@ class VmTranslator:
             else:
                 raise Exception(f"Unknown command <{tokens}>")
 
-        return asm
+        return [line for line in asm if len(line)]

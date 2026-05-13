@@ -40,7 +40,7 @@ class VmFunctionTranslator:
             case _:
                 raise Exception(f"Command <{line}> not found")
 
-        return asm.splitlines()
+        return [token.strip() for token in asm.splitlines() if len(token)]
 
 
 def vm_call(caller: str, callee: str, callee_nargs: int, caller_ret_count: int) -> str:
@@ -102,10 +102,7 @@ def vm_function(function_name: str, n_vars: int) -> str:
         // push local variables
     """
 
-    for _ in range(n_vars):
-        function += f"""
-            {push_constant(0)}
-        """
+    function += push_constant(0) * n_vars
 
     return function
 

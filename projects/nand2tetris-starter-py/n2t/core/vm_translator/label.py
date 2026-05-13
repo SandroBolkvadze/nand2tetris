@@ -15,8 +15,6 @@ class VmLabelTranslator:
     def translate(self, line: str) -> Iterable[str]:
         command, label = line.split()
 
-        asm = f"""
-            ({self.filename}.{label})
-        """
+        asm = f"({self.filename}.{label})"
 
-        return asm.splitlines()
+        return [token.strip() for token in asm.splitlines() if len(token)]

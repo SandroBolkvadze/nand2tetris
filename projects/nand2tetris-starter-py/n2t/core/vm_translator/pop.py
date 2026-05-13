@@ -35,7 +35,7 @@ class VmPopTranslator:
             case _:
                 raise Exception(f"Unknown command <{line}>")
 
-        return asm.splitlines()
+        return [token.strip() for token in asm.splitlines() if len(token)]
 
 
 def pop_local(i: int) -> str:

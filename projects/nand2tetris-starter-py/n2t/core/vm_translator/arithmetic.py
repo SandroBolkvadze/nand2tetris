@@ -50,7 +50,7 @@ class VmArithmeticTranslator:
             case _:
                 raise Exception(f"Command <{line}> not found")
 
-        return asm.splitlines()
+        return [token.strip() for token in asm.splitlines() if len(token)]
 
 
 def vm_add() -> str:

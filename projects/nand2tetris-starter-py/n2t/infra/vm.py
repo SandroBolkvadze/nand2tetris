@@ -9,7 +9,7 @@ from n2t.infra.io import File, FileFormat
 
 
 @dataclass
-class VmProgram:  # TODO: your work for Projects 7 and 8 starts here
+class VmProgram:
     path: Path
 
     @classmethod
