@@ -3,10 +3,10 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from n2t.core.vm_translator.push import push_constant, push_d
-from n2t.core.vm_translator.state import VmTranslatorState
+from n2t.core.vm_translator.push_pop_commands.push import push_constant, push_d
+from n2t.core.vm_translator.utils.state import VmTranslatorState
 
-_FUNCTION_COMMANDS = [
+FUNCTION_COMMANDS = [
     "function",
     "return",
     "call",

@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from n2t.core.vm_translator.function import vm_call
+from n2t.core.vm_translator.function_commands.function import vm_call
 
 
 @dataclass

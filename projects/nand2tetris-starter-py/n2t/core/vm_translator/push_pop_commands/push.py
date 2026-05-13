@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-_PUSH_COMMANDS = [
+PUSH_COMMANDS = [
     "push",
 ]
 

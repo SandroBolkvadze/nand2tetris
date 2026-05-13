@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-_COMMENT = "//"
+COMMENT = "//"
 
 
 @dataclass
@@ -12,7 +12,7 @@ class Preprocessor:
         sanitized = []
 
         for line in _vm_instructions:
-            comment_index = line.find(_COMMENT)
+            comment_index = line.find(COMMENT)
 
             if comment_index != -1:
                 line = line[:comment_index]

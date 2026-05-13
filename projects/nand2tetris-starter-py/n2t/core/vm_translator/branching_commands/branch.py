@@ -3,7 +3,9 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-_BRANCH_COMMANDS = [
+from n2t.core.vm_translator.utils.state import VmTranslatorState
+
+BRANCH_COMMANDS = [
     "goto",
     "if-goto",
 ]
@@ -11,7 +13,7 @@ _BRANCH_COMMANDS = [
 
 @dataclass
 class VmBranchTranslator:
-    filename: str
+    state: VmTranslatorState
 
     def translate(self, line: str) -> Iterable[str]:
         command, label = line.split()
@@ -19,27 +21,29 @@ class VmBranchTranslator:
 
         match command:
             case "goto":
-                asm = vm_goto(self.filename, label)
+                asm = vm_goto(self.state.filename, self.state.current_function, label)
             case "if-goto":
-                asm = vm_if_goto(self.filename, label)
+                asm = vm_if_goto(
+                    self.state.filename, self.state.current_function, label
+                )
             case _:
                 raise Exception(f"Unknown Branch command <{line}>")
 
         return [token.strip() for token in asm.splitlines() if len(token)]
 
 
-def vm_goto(filename: str, label: str) -> str:
+def vm_goto(filename: str, current_function: str, label: str) -> str:
     return f"""
-        @{filename}.{label}
+        @{filename}.{current_function}${label}
         0; JMP
     """
 
 
-def vm_if_goto(filename: str, label: str) -> str:
+def vm_if_goto(filename: str, current_function: str, label: str) -> str:
     return f"""
         @SP
         AM=M-1
         D=M
-        @{filename}.{label}
+        @{filename}.{current_function}${label}
         D; JNE
     """

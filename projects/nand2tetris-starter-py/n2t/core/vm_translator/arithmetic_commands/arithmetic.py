@@ -3,9 +3,9 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from n2t.core.vm_translator.state import VmTranslatorState
+from n2t.core.vm_translator.utils.state import VmTranslatorState
 
-_ARITHMETIC_COMMANDS = [
+ARITHMETIC_COMMANDS = [
     "add",
     "sub",
     "neg",

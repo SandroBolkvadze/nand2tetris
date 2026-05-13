@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from n2t.core.vm_translator.bootstrap import VmBootstrapGenerator
 from n2t.core.vm_translator.facade import VmTranslator as DefaultVmTranslator
+from n2t.core.vm_translator.utils.bootstrap import VmBootstrapGenerator
 from n2t.infra.io import File, FileFormat
 
 
