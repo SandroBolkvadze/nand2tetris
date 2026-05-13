@@ -3,8 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable
 
+from n2t.core.vm_translator.state import VmTranslatorState
+
+
 @dataclass
 class VmArithmeticTranslator:
+    state: VmTranslatorState
+
     def translate(self, line: str) -> Iterable[str]:
 
         asm = None
@@ -13,24 +18,28 @@ class VmArithmeticTranslator:
                 asm = vm_add()
             case "sub":
                 asm = vm_sub()
-            # case "eq":
-            #     asm = vm_eq()
-            # case "gt":
-            #     asm = vm_gt()
-            # case "lt":
-            #     asm = vm_lt()
+            case "eq":
+                self.state.total_eq_count += 1
+                asm = vm_eq(self.state.filename, self.state.total_eq_count)
+            case "gt":
+                self.state.total_gt_count += 1
+                asm = vm_gt(self.state.filename, self.state.total_gt_count)
+            case "lt":
+                self.state.total_lt_count += 1
+                asm = vm_lt(self.state.filename, self.state.total_lt_count)
             case "neg":
                 asm = vm_neg()
             case "and":
                 asm = vm_and()
             case "or":
-                asm =  vm_or()
+                asm = vm_or()
             case "not":
                 asm = vm_not()
             case _:
                 raise Exception(f"Command <{line}> not found")
 
         return asm.splitlines()
+
 
 def vm_add() -> str:
     return """
@@ -42,6 +51,7 @@ def vm_add() -> str:
         M=M+D
     """
 
+
 def vm_sub() -> str:
     return """
         // sub
@@ -52,92 +62,87 @@ def vm_sub() -> str:
         M=M-D
     """
 
-def vm_eq() -> str:
-    return """
+
+def vm_eq(filename: str, eq_count: int) -> str:
+    eq_label  = f"{filename}$eq.{eq_count}"
+    neq_label = f"{filename}$neq.{eq_count}"
+
+    return f"""
         // eq
         @SP
         AM=M-1
         D=M
         A=A-1
-        MD=M-D
+        D=M-D
+        M=0
 
-        @EQ
+        @{eq_label}
         D; JEQ
-        @NEQ
+        @{neq_label}
         0; JMP
 
-        (EQ)
+        ({eq_label})
         @SP
         A=M-1
         M=-1
-        @CONT
-        0; JMP
 
-        (NEQ)
-        @SP
-        A=M-1
-        M=0
-
-        (CONT)
+        ({neq_label})
     """
 
-def vm_gt() -> str:
-    return """
+
+def vm_gt(filename: str, gt_count: int) -> str:
+    gt_label = f"{filename}$gt.{gt_count}"
+    le_label = f"{filename}$le.{gt_count}"
+
+    return f"""
         // gt
         @SP
         AM=M-1
         D=M
         A=A-1
-        MD=M-D
+        D=M-D
+        M=0
 
-        @GT
+        @{gt_label}
         D; JGT
-        @LE
+        @{le_label}
         0; JMP
 
-        (GT)
+        ({gt_label})
         @SP
         A=M-1
         M=-1
-        @CONT
-        0; JMP
 
-        (LE)
-        @SP
-        A=M-1
-        M=0
-
-        (CONT)
+        ({le_label})
     """
 
-def vm_lt() -> str:
-    return """
+
+def vm_lt(filename: str, lt_count: int) -> str:
+    lt_label = f"{filename}$lt.{lt_count}"
+    ge_label = f"{filename}$ge.{lt_count}"
+
+    return f"""
         // lt
         @SP
         AM=M-1
         D=M
         A=A-1
-        MD=M-D
-
-        @GE
-        D; JGE
-        @LTE
-        0; JMP
-
-        (GE)
-        @SP
-        A=M-1
+        D=M-D
         M=0
-        @CONT
+
+        @{lt_label}
+        D; JLT
+        @{ge_label}
         0; JMP
 
-        (LE)
+        ({lt_label})
         @SP
         A=M-1
         M=-1
 
-        (CONT)
+        ({ge_label})
     """
+
 
 def vm_neg() -> str:
     return """
@@ -146,6 +151,7 @@ def vm_neg() -> str:
         A=M-1
         M=-M
     """
+
 
 def vm_and() -> str:
     return """
@@ -157,6 +163,7 @@ def vm_and() -> str:
         M=M&D
     """
 
+
 def vm_or() -> str:
     return """
         // or
@@ -167,10 +174,11 @@ def vm_or() -> str:
         M=M|D
     """
 
+
 def vm_not() -> str:
     return """
         // not
         @SP
-        A=M
+        A=M-1
         M=!M
     """

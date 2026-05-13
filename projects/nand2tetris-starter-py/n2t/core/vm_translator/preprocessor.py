@@ -5,9 +5,11 @@ from typing import Iterable, Protocol
 
 _COMMENT = "//"
 
+
 class TranslatorChain(Protocol):
     def process(self, _vm_instructions: Iterable[str]) -> Iterable[str]:
         pass
+
 
 @dataclass
 class Identity:
@@ -15,6 +17,7 @@ class Identity:
 
     def process(self, _vm_instructions: Iterable[str]) -> Iterable[str]:
         return _vm_instructions
+
 
 @dataclass
 class Preprocessor:
@@ -34,4 +37,3 @@ class Preprocessor:
                 sanitized.append(line)
 
         return self.next.process(sanitized)
-

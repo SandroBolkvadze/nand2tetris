@@ -37,7 +37,7 @@ def test_run_emulator_bat(
     run_for_all_os(test_file, cpu_emulator_bat, projects_directory)
 
 
-@pytest.mark.skip
+# @pytest.mark.skip
 @pytest.mark.parametrize("test_file", _TEST_PROGRAMS)
 def test_run_emulator_sh(
     test_file: tuple[str, str],

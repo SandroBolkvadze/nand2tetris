@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable
 
+
 @dataclass
 class VmPushTranslator:
     filename: str
@@ -43,6 +44,7 @@ def push_constant(i: int) -> str:
         {push_d()}
     """
 
+
 def push_local(i: int) -> str:
     return f"""
         // push local
@@ -53,6 +55,7 @@ def push_local(i: int) -> str:
         D=M
         {push_d()}
     """
+
 
 def push_argument(i: int) -> str:
     return f"""
@@ -65,6 +68,7 @@ def push_argument(i: int) -> str:
         {push_d()}
     """
 
+
 def push_this(i: int) -> str:
     return f"""
         // push this
@@ -75,6 +79,7 @@ def push_this(i: int) -> str:
         D=M
         {push_d()}
     """
+
 
 def push_that(i: int) -> str:
     return f"""
@@ -87,6 +92,7 @@ def push_that(i: int) -> str:
         {push_d()}
     """
 
+
 def push_static(prefix: str, i: int):
     return f"""
         // push static
@@ -96,6 +102,7 @@ def push_static(prefix: str, i: int):
         D=M
         {push_d()}
     """
+
 
 def push_temp(i: int):
     return f"""
@@ -108,6 +115,7 @@ def push_temp(i: int):
         {push_d()}
     """
 
+
 def push_pointer(i: int):
     return f"""
         // push pointer
@@ -118,6 +126,7 @@ def push_pointer(i: int):
         D=M
         {push_d()}
     """
+
 
 def push_d():
     return """

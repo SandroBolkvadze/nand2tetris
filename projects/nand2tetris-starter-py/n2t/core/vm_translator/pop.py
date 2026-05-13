@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable
 
+
 @dataclass
 class VmPopTranslator:
     filename: str
@@ -18,11 +19,11 @@ class VmPopTranslator:
             case "argument":
                 asm = pop_argument(index)
             case "this":
-                asm =  pop_this(index)
+                asm = pop_this(index)
             case "that":
-                asm =  pop_that(index)
+                asm = pop_that(index)
             case "static":
-                asm =  pop_static(self.filename, index)
+                asm = pop_static(self.filename, index)
             case "temp":
                 asm = pop_temp(index)
             case "pointer":
@@ -31,6 +32,7 @@ class VmPopTranslator:
                 raise Exception(f"Unknown command <{line}>")
 
         return asm.splitlines()
+
 
 def pop_local(i: int) -> str:
     return f"""
@@ -49,6 +51,7 @@ def pop_local(i: int) -> str:
         M=D
     """
 
+
 def pop_argument(i: int) -> str:
     return f"""
         // pop argument
@@ -65,6 +68,7 @@ def pop_argument(i: int) -> str:
         A=M
         M=D
     """
+
 
 def pop_this(i: int) -> str:
     return f"""
@@ -83,6 +87,7 @@ def pop_this(i: int) -> str:
         M=D
     """
 
+
 def pop_that(i: int) -> str:
     return f"""
         // pop that
@@ -100,6 +105,7 @@ def pop_that(i: int) -> str:
         M=D
     """
 
+
 def pop_static(prefix: str, i: int):
     return f"""
         // pop static
@@ -109,6 +115,7 @@ def pop_static(prefix: str, i: int):
         @{prefix}.{i}
         M=D
     """
+
 
 def pop_temp(i: int):
     return f"""
@@ -126,6 +133,7 @@ def pop_temp(i: int):
         A=M
         M=D
     """
+
 
 def pop_pointer(i: int):
     return f"""
