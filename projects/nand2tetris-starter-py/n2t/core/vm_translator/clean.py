@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Iterable, Protocol
+from collections.abc import Iterable
+from dataclasses import dataclass
 
 _COMMENT = "//"
 
+
 @dataclass
 class Preprocessor:
-
     def process(self, _vm_instructions: Iterable[str]) -> Iterable[str]:
         sanitized = []
 

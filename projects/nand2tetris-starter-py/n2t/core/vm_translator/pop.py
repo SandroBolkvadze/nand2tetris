@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
+
+_POP_COMMANDS = [
+    "pop",
+]
 
 
 @dataclass
@@ -106,7 +110,7 @@ def pop_that(i: int) -> str:
     """
 
 
-def pop_static(prefix: str, i: int):
+def pop_static(prefix: str, i: int) -> str:
     return f"""
         // pop static
         @SP
@@ -117,7 +121,7 @@ def pop_static(prefix: str, i: int):
     """
 
 
-def pop_temp(i: int):
+def pop_temp(i: int) -> str:
     return f"""
         // pop temp
         @{i}
@@ -135,7 +139,7 @@ def pop_temp(i: int):
     """
 
 
-def pop_pointer(i: int):
+def pop_pointer(i: int) -> str:
     return f"""
         // pop pointer
         @{i}

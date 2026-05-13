@@ -1,63 +1,33 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Self
 
-from n2t.core.vm_translator.arithmetic import VmArithmeticTranslator
-from n2t.core.vm_translator.branch import VmBranchTranslator
-from n2t.core.vm_translator.function import VmFunctionTranslator
-from n2t.core.vm_translator.label import VmLabelTranslator
-from n2t.core.vm_translator.pop import VmPopTranslator
+from n2t.core.vm_translator.arithmetic import (
+    _ARITHMETIC_COMMANDS,
+    VmArithmeticTranslator,
+)
+from n2t.core.vm_translator.branch import _BRANCH_COMMANDS, VmBranchTranslator
 from n2t.core.vm_translator.clean import Preprocessor
-from n2t.core.vm_translator.push import VmPushTranslator
+from n2t.core.vm_translator.function import _FUNCTION_COMMANDS, VmFunctionTranslator
+from n2t.core.vm_translator.label import _LABEL_COMMANDS, VmLabelTranslator
+from n2t.core.vm_translator.pop import _POP_COMMANDS, VmPopTranslator
+from n2t.core.vm_translator.push import _PUSH_COMMANDS, VmPushTranslator
 from n2t.core.vm_translator.state import VmTranslatorState
 
-_ARITHMETIC_COMMANDS = [
-    "add",
-    "sub",
-    "neg",
-    "eq",
-    "gt",
-    "lt",
-    "and",
-    "or",
-    "not",
-]
-
-_PUSH_COMMANDS = [
-    "push",
-]
-
-_POP_COMMANDS = [
-    "pop",
-]
-
-_LABEL_COMMANDS = [
-    "label",
-]
-
-_BRANCH_COMMANDS = [
-    "goto",
-    "if-goto",
-]
-
-_FUNCTION_COMMANDS = [
-    "function",
-    "return",
-    "call",
-]
 
 @dataclass
 class VmTranslator:
     filename: str
 
     @classmethod
-    def create(cls, filename: str):
+    def create(cls, filename: str) -> Self:
         return cls(filename)
 
     def translate(self, _vm_instructions: Iterable[str]) -> Iterable[str]:
         _vm_instructions_sanitized = Preprocessor().process(_vm_instructions)
         state = VmTranslatorState(filename=self.filename)
 
-        asm = []
+        asm: list[str] = []
 
         for line in _vm_instructions_sanitized:
             tokens = line.split()

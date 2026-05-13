@@ -1,9 +1,21 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from n2t.core.vm_translator.state import VmTranslatorState
+
+_ARITHMETIC_COMMANDS = [
+    "add",
+    "sub",
+    "neg",
+    "eq",
+    "gt",
+    "lt",
+    "and",
+    "or",
+    "not",
+]
 
 
 @dataclass
@@ -64,7 +76,7 @@ def vm_sub() -> str:
 
 
 def vm_eq(filename: str, eq_count: int) -> str:
-    eq_label  = f"{filename}$eq.{eq_count}"
+    eq_label = f"{filename}$eq.{eq_count}"
     neq_label = f"{filename}$neq.{eq_count}"
 
     return f"""

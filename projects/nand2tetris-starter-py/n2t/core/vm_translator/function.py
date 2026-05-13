@@ -1,10 +1,17 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
-from n2t.core.vm_translator.push import push_d, push_constant
+from n2t.core.vm_translator.push import push_constant, push_d
 from n2t.core.vm_translator.state import VmTranslatorState
+
+_FUNCTION_COMMANDS = [
+    "function",
+    "return",
+    "call",
+]
+
 
 @dataclass
 class VmFunctionTranslator:
@@ -18,19 +25,25 @@ class VmFunctionTranslator:
             case "call":
                 _, callee, n_args = commands[0], commands[1], int(commands[2])
                 self.state.current_function_ret_count += 1
-                asm = vm_call(self.state.current_function, callee, n_args, self.state.current_function_ret_count)
+                asm = vm_call(
+                    self.state.current_function,
+                    callee,
+                    n_args,
+                    self.state.current_function_ret_count,
+                )
             case "function":
                 _, function_name, n_vars = commands[0], commands[1], int(commands[2])
                 self.state.current_function = function_name
                 asm = vm_function(function_name, n_vars)
             case "return":
                 asm = vm_return()
+            case _:
+                raise Exception(f"Command <{line}> not found")
 
         return asm.splitlines()
 
-def vm_call(
-    caller: str, callee: str, callee_nargs: int, caller_ret_count: int
-) -> str:
+
+def vm_call(caller: str, callee: str, callee_nargs: int, caller_ret_count: int) -> str:
     ret_label = f"{caller}$ret.{caller_ret_count}"
 
     return f"""
@@ -82,21 +95,23 @@ def vm_call(
         ({ret_label})
     """
 
+
 def vm_function(function_name: str, n_vars: int) -> str:
     function = f"""
         ({function_name})
         // push local variables
     """
 
-    for i in range(n_vars):
+    for _ in range(n_vars):
         function += f"""
             {push_constant(0)}
         """
 
     return function
 
+
 def vm_return() -> str:
-    return f"""
+    return """
         // save frame end
         @LCL
         D=M

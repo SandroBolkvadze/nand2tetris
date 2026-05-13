@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
+
+_PUSH_COMMANDS = [
+    "push",
+]
 
 
 @dataclass
@@ -93,7 +97,7 @@ def push_that(i: int) -> str:
     """
 
 
-def push_static(prefix: str, i: int):
+def push_static(prefix: str, i: int) -> str:
     return f"""
         // push static
         @{i}
@@ -104,7 +108,7 @@ def push_static(prefix: str, i: int):
     """
 
 
-def push_temp(i: int):
+def push_temp(i: int) -> str:
     return f"""
         // push temp
         @{i}
@@ -116,7 +120,7 @@ def push_temp(i: int):
     """
 
 
-def push_pointer(i: int):
+def push_pointer(i: int) -> str:
     return f"""
         // push pointer
         @{i}
@@ -128,7 +132,7 @@ def push_pointer(i: int):
     """
 
 
-def push_d():
+def push_d() -> str:
     return """
         // push D
         @SP
