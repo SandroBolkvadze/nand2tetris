@@ -10,12 +10,8 @@ symbols = ["{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&",
 @dataclass
 class JackTokenizer:
     def __init__(self, path: str) -> None:
+        self.content = "".join(f"{line}\n" for line in File(Path(path)).load())
         self.token = None; self.is_str = None
-
-        self.content = ""
-        for line in File(Path(path)).load():
-            self.content += f"{line}\n"
-
         self.position = 0
 
     def _align(self) -> bool:
@@ -43,13 +39,13 @@ class JackTokenizer:
         start = self.position; self.position += 1
         token = self.content[start]
 
-        # if token is string
+        # check if token is string
         if token == "\"":
             self.position = self.content.find("\"", self.position + 1) + 1
             self.token = token; self.is_str = True
             return self.content[start + 1: self.position - 1]
 
-        # advance one character each on each cycle
+        # advance one character on each cycle
         while True:
             if self._align() or self.position == len(self.content):
                 break
@@ -58,6 +54,7 @@ class JackTokenizer:
                 break
             token += ch; self.position += 1
 
+        # save token
         self.token = token; self.is_str = False
 
         return token
