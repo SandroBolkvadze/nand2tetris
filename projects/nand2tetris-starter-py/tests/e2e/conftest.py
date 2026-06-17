@@ -67,5 +67,5 @@ def run_vm_translator_test(
     )
     output = process.communicate()[0].decode("utf-8")
     assert "end of script - comparison ended successfully" in output.lower()
-    # remove_files(pattern=str(Path(projects_directory_path).joinpath("*.asm")))
-    # remove_files(pattern=str(Path(projects_directory_path).joinpath("*.out")))
+    remove_files(pattern=str(Path(projects_directory_path).joinpath("*.asm")))
+    remove_files(pattern=str(Path(projects_directory_path).joinpath("*.out")))
