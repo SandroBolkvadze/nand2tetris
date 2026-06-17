@@ -4,6 +4,7 @@ from pathlib import Path
 from n2t.infra.io import File
 
 keyword = ["class", "constructor", "function", "method", "field", "static", "var", "int", "char", "boolean", "void", "true", "false", "null", "this", "let", "do", "if", "else", "while", "return"]
+
 symbols = ["{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"]
 
 @dataclass
@@ -58,12 +59,6 @@ class JackTokenizer:
             token += ch; self.position += 1
 
         self.token = token; self.is_str = False
-
-        # if token is < or >
-        if token == "<":
-            token = "&lt;"
-        elif token == ">":
-            token = "&gt;"
 
         return token
 
