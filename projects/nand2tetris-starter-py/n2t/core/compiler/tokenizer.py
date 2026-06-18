@@ -7,6 +7,13 @@ keyword = ["class", "constructor", "function", "method", "field", "static", "var
 
 symbols = ["{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"]
 
+KEYWORD      = "keyword"
+SYMBOL       = "symbol"
+IDENTIFIER   = "identifier"
+INT_CONST    = "integerConstant"
+STRING_CONST = "stringConstant"
+
+
 @dataclass
 class JackTokenizer:
     def __init__(self, path: str) -> None:
@@ -36,6 +43,10 @@ class JackTokenizer:
     def advance(self) -> str:
         self._align()
 
+        if not self.has_more_tokens():
+            return ""
+
+        # print("position:", self.position)
         start = self.position; self.position += 1
         token = self.content[start]
 
@@ -61,15 +72,38 @@ class JackTokenizer:
 
     def token_type(self) -> str:
         if self.token in keyword:
-            return "keyword"
+            return KEYWORD
         elif self.token in symbols:
-            return "symbol"
+            return SYMBOL
         elif self.token.isdigit():
-            return "integerConstant"
+            return INT_CONST
         elif self.is_str:
-            return "stringConstant"
+            return STRING_CONST
         else:
-            return "identifier"
+            return IDENTIFIER
+
+    def current_token(self) -> str:
+        return self.token
+
+    def keyword(self) -> str:
+        assert self.token_type() == KEYWORD, f"Expected {KEYWORD}, Got {self.token_type()}"
+        return self.token
+
+    def symbol(self) -> str:
+        assert self.token_type() == SYMBOL, f"Expected {SYMBOL}, Got {self.token_type()}"
+        return self.token
+
+    def identifier(self) -> str:
+        assert self.token_type() == IDENTIFIER, f"Expected {IDENTIFIER}, Got {self.token_type()}"
+        return self.token
+
+    def int_val(self) -> str:
+        assert self.token_type() == INT_CONST, f"Expected {INT_CONST}, Got {self.token_type()}"
+        return self.token
+
+    def string_val(self) -> str:
+        assert self.token_type() == STRING_CONST, f"Expected {STRING_CONST}, Got {self.token_type()}"
+        return self.token
 
 # if __name__ == "__main__":
 #     tokenizer = JackTokenizer("/home/sandro/code/nand2tetris/nand2tetris/projects/nand2tetris-starter-py/tests/e2e/jacks_for_analyzer/Square/Main.jack")

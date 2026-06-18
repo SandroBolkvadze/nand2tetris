@@ -31,7 +31,7 @@ def test_should_analyze_on_files(test_directory: str, jacks_directory: Path) -> 
     # )
 
     remove_files(pattern=str(Path(projects_directory_path).joinpath("*.xml")))
-    # remove_files(pattern=str(Path(projects_directory_path).joinpath("*.vm")))
+    remove_files(pattern=str(Path(projects_directory_path).joinpath("*.vm")))
 
 
 _TEST_PROGRAMS = ["ArrayTest", "ExpressionLessSquare", "Square"]
