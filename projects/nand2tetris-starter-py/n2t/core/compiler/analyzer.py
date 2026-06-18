@@ -41,11 +41,3 @@ class JackAnalyzerV1:
         engine = CompilationXMLEngine(JackTokenizer(str(self.path)))
         return engine.xml
 
-
-# @dataclass
-# class JackAnalyzerV2:
-#     path: Path
-#
-#     def analyze(self) -> Iterable[str]:
-#         engine = CompilationEngine(JackTokenizer(str(self.path)))
-#         return engine.vm_writer.vm
