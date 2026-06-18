@@ -37,7 +37,7 @@ def test_should_analyze_on_files(test_directory: str, jacks_directory: Path) -> 
 _TEST_PROGRAMS = ["ArrayTest", "ExpressionLessSquare", "Square"]
 
 
-@pytest.mark.skip
+# @pytest.mark.skip
 @pytest.mark.parametrize("test_directory", _TEST_PROGRAMS)
 def test_should_analyze_on_directory(
     test_directory: str, jacks_directory: Path

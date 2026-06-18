@@ -17,13 +17,19 @@ class JackProgram:
     def compile(self) -> None:
         from n2t.core.compiler.analyzer import JackAnalyzerV0, JackAnalyzerV1
 
-        analyzer_v0 = JackAnalyzerV0(self.path)
-        File(Path(self.path.parent / f"{self.path.stem}T").with_suffix(".xml")).save(
-            analyzer_v0.analyze()
-        )
+        if self.path.is_dir():
+            paths = [path for path in self.path.iterdir() if path.suffix == ".jack"]
+        else:
+            paths = [self.path]
 
-        analyzer_v1 = JackAnalyzerV1(self.path)
-        File(Path(self.path.parent / f"{self.path.stem}").with_suffix(".xml")).save(
-            analyzer_v1.analyze()
-        )
+        for path in paths:
+            analyzer_v0 = JackAnalyzerV0(path)
+            File(Path(path.parent / f"{path.stem}T").with_suffix(".xml")).save(
+                analyzer_v0.analyze()
+            )
+
+            analyzer_v1 = JackAnalyzerV1(path)
+            File(Path(path.parent / f"{path.stem}").with_suffix(".xml")).save(
+                analyzer_v1.analyze()
+            )
 

@@ -22,6 +22,10 @@ class JackAnalyzerV0:
                 token = "&lt;"
             elif token == ">":
                 token = "&gt;"
+            elif token == "&":
+                token = "&amp;"
+            elif token == "\"":
+                token = "&quot;"
 
             xml.append(f"<{token_type}> {token} </{token_type}>\r")
         xml.append("</tokens>\r")

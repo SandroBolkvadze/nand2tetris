@@ -18,10 +18,14 @@ class CompilationEngine:
     def print_xml_token(self, token: str, prefix="") -> None:
         token_type = self.tokenizer.token_type()
 
-        if token == ">":
-            token = "&gt;"
-        elif token == "<":
+        if token == "<":
             token = "&lt;"
+        elif token == ">":
+            token = "&gt;"
+        elif token == "&":
+            token = "&amp;"
+        elif token == "\"":
+            token = "&quot;"
 
         self.xml.append(f"{prefix}<{token_type}> {token} </{token_type}>\r")
 
