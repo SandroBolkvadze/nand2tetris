@@ -38,7 +38,7 @@
           <identifier> length </identifier>
           <symbol> = </symbol>
           <expression>
-            <term>  
+            <term>
               <identifier> Keyboard </identifier>
               <symbol> . </symbol>
               <identifier> readInt </identifier>

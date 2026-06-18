@@ -53,8 +53,9 @@ class JackTokenizer:
         # check if token is string
         if token == "\"":
             self.position = self.content.find("\"", self.position + 1) + 1
-            self.token = token; self.is_str = True
-            return self.content[start + 1: self.position - 1]
+            self.token = self.content[start + 1: self.position - 1]
+            self.is_str = True
+            return self.token
 
         # advance one character on each cycle
         while True:

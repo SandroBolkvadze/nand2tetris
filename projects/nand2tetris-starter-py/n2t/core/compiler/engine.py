@@ -15,6 +15,12 @@ class CompilationEngine:
 
     def print_xml_token(self, token: str, prefix="") -> None:
         token_type = self.tokenizer.token_type()
+
+        if token == ">":
+            token = "&gt;"
+        elif token == "<":
+            token = "&lt;"
+
         self.xml.append(f"{prefix}<{token_type}> {token} </{token_type}>\r")
 
     def process_type(self, prefix=""):
@@ -208,7 +214,20 @@ class CompilationEngine:
         self.xml.append(f"{prefix}<doStatement>\r")
         next_prefix = prefix + "  "
         self.process("do", next_prefix)
-        self.compile_expression(next_prefix)
+
+        self.process(self.tokenizer.identifier(), next_prefix)
+
+        if self.tokenizer.current_token() == "(":
+            self.process("(", next_prefix)
+            self.compile_expression_list(next_prefix)
+            self.process(")", next_prefix)
+        else:
+            self.process(".", next_prefix)
+            self.process(self.tokenizer.identifier(), next_prefix)
+            self.process("(", next_prefix)
+            self.compile_expression_list(next_prefix)
+            self.process(")", next_prefix)
+
         self.process(";", next_prefix)
         self.xml.append(f"{prefix}</doStatement>\r")
 

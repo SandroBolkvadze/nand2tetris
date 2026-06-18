@@ -7,7 +7,7 @@ import pytest
 from n2t.infra.io import remove_files
 from n2t.runner.cli import run_compiler
 
-_TEST_PROGRAMS = ["ArrayTest", "ExpressionLessSquare", "Square"]
+_TEST_PROGRAMS = ["ArrayTest", "Square", "ExpressionLessSquare"]
 
 
 # @pytest.mark.skip
@@ -24,11 +24,11 @@ def test_should_analyze_on_files(test_directory: str, jacks_directory: Path) -> 
         f2=str(Path(projects_directory_path).joinpath("MainT.xml")),
     )
 
-    # assert filecmp.cmp(
-    #     shallow=False,
-    #     f1=str(Path(projects_directory_path).joinpath("Main.xml.cmp")),
-    #     f2=str(Path(projects_directory_path).joinpath("Main.xml")),
-    # )
+    assert filecmp.cmp(
+        shallow=False,
+        f1=str(Path(projects_directory_path).joinpath("Main.xml.cmp")),
+        f2=str(Path(projects_directory_path).joinpath("Main.xml")),
+    )
 
     remove_files(pattern=str(Path(projects_directory_path).joinpath("*.xml")))
     remove_files(pattern=str(Path(projects_directory_path).joinpath("*.vm")))
