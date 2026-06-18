@@ -10,15 +10,14 @@ from n2t.core.compiler.tokenizer import (
     JackTokenizer,
 )
 
-
 class CompilationXMLEngine:
     def __init__(self, tokenizer: JackTokenizer) -> None:
-        self.xml = []
+        self.xml: list[str] = []
         self.tokenizer = tokenizer
         self.tokenizer.advance()
         self.compile_class()
 
-    def print_xml_token(self, token: str, prefix="") -> None:
+    def print_xml_token(self, token: str, prefix: str="") -> None:
         token_type = self.tokenizer.token_type()
 
         if token == "<":
@@ -32,20 +31,20 @@ class CompilationXMLEngine:
 
         self.xml.append(f"{prefix}<{token_type}> {token} </{token_type}>\r")
 
-    def process_type(self, prefix=""):
+    def process_type(self, prefix: str="") -> None:
         if self.tokenizer.token_type() == IDENTIFIER:
             self.process(self.tokenizer.identifier(), prefix)
         else:
             self.process(["int", "char", "boolean"], prefix)
 
-    def process_list(self, get_token: Callable[[], str], prefix=""):
+    def process_list(self, get_token: Callable[[], str], prefix: str="") -> None:
         self.process(get_token(), prefix)
 
         while self.tokenizer.current_token() == ",":
             self.process(",", prefix)
             self.process(get_token(), prefix)
 
-    def process(self, expected: list[str] | str, prefix="") -> None:
+    def process(self, expected: list[str] | str, prefix: str="") -> None:
         if isinstance(expected, str):
             expected = [expected]
 
@@ -56,7 +55,7 @@ class CompilationXMLEngine:
         else:
             raise Exception(f"Expected {expected}, Got {self.tokenizer.keyword()}")
 
-    def compile_class(self, prefix="") -> None:
+    def compile_class(self, prefix: str="") -> None:
         self.xml.append(f"{prefix}<class>\r")
 
         next_prefix = prefix + "  "
@@ -77,7 +76,7 @@ class CompilationXMLEngine:
         self.process("}", next_prefix)
         self.xml.append(f"{prefix}</class>\r")
 
-    def compile_class_var_dec(self, prefix="") -> None:
+    def compile_class_var_dec(self, prefix: str="") -> None:
         self.xml.append(f"{prefix}<classVarDec>\r")
 
         next_prefix = prefix + "  "
@@ -88,7 +87,7 @@ class CompilationXMLEngine:
         self.process(";", next_prefix)
         self.xml.append(f"{prefix}</classVarDec>\r")
 
-    def compile_subroutine_dec(self, prefix="") -> None:
+    def compile_subroutine_dec(self, prefix: str="") -> None:
         self.xml.append(f"{prefix}<subroutineDec>\r")
 
         next_prefix = prefix + "  "
@@ -106,7 +105,7 @@ class CompilationXMLEngine:
 
         self.xml.append(f"{prefix}</subroutineDec>\r")
 
-    def compile_parameter_list(self, prefix="") -> None:
+    def compile_parameter_list(self, prefix: str="") -> None:
         self.xml.append(f"{prefix}<parameterList>\r")
 
         if self.tokenizer.current_token() == ")":
@@ -124,7 +123,7 @@ class CompilationXMLEngine:
 
         self.xml.append(f"{prefix}</parameterList>\r")
 
-    def compile_subroutine_body(self, prefix="") -> None:
+    def compile_subroutine_body(self, prefix: str="") -> None:
         self.xml.append(f"{prefix}<subroutineBody>\r")
 
         next_prefix = prefix + "  "
@@ -137,7 +136,7 @@ class CompilationXMLEngine:
 
         self.xml.append(f"{prefix}</subroutineBody>\r")
 
-    def compile_var_dec(self, prefix="") -> None:
+    def compile_var_dec(self, prefix: str="") -> None:
         self.xml.append(f"{prefix}<varDec>\r")
         next_prefix = prefix + "  "
         self.process("var", next_prefix)
@@ -146,7 +145,7 @@ class CompilationXMLEngine:
         self.process(";", next_prefix)
         self.xml.append(f"{prefix}</varDec>\r")
 
-    def compile_statements(self, prefix="") -> None:
+    def compile_statements(self, prefix: str="") -> None:
         self.xml.append(f"{prefix}<statements>\r")
 
         next_prefix = prefix + "  "
@@ -167,7 +166,7 @@ class CompilationXMLEngine:
 
         self.xml.append(f"{prefix}</statements>\r")
 
-    def compile_let(self, prefix="") -> None:
+    def compile_let(self, prefix: str="") -> None:
         self.xml.append(f"{prefix}<letStatement>\r")
 
         next_prefix = prefix + "  "
@@ -184,7 +183,7 @@ class CompilationXMLEngine:
 
         self.xml.append(f"{prefix}</letStatement>\r")
 
-    def compile_if(self, prefix="") -> None:
+    def compile_if(self, prefix: str="") -> None:
         self.xml.append(f"{prefix}<ifStatement>\r")
 
         next_prefix = prefix + "  "
@@ -204,7 +203,7 @@ class CompilationXMLEngine:
 
         self.xml.append(f"{prefix}</ifStatement>\r")
 
-    def compile_while(self, prefix="") -> None:
+    def compile_while(self, prefix: str="") -> None:
         self.xml.append(f"{prefix}<whileStatement>\r")
 
         next_prefix = prefix + "  "
@@ -218,7 +217,7 @@ class CompilationXMLEngine:
 
         self.xml.append(f"{prefix}</whileStatement>\r")
 
-    def compile_do(self, prefix="") -> None:
+    def compile_do(self, prefix: str="") -> None:
         self.xml.append(f"{prefix}<doStatement>\r")
         next_prefix = prefix + "  "
         self.process("do", next_prefix)
@@ -239,7 +238,7 @@ class CompilationXMLEngine:
         self.process(";", next_prefix)
         self.xml.append(f"{prefix}</doStatement>\r")
 
-    def compile_return(self, prefix="") -> None:
+    def compile_return(self, prefix: str="") -> None:
         self.xml.append(f"{prefix}<returnStatement>\r")
         next_prefix = prefix + "  "
         self.process("return", next_prefix)
@@ -248,7 +247,7 @@ class CompilationXMLEngine:
         self.process(";", next_prefix)
         self.xml.append(f"{prefix}</returnStatement>\r")
 
-    def compile_expression(self, prefix="") -> None:
+    def compile_expression(self, prefix: str="") -> None:
         self.xml.append(f"{prefix}<expression>\r")
 
         next_prefix = prefix + "  "
@@ -260,7 +259,7 @@ class CompilationXMLEngine:
 
         self.xml.append(f"{prefix}</expression>\r")
 
-    def compile_term(self, prefix="") -> None:
+    def compile_term(self, prefix: str="") -> None:
         self.xml.append(f"{prefix}<term>\r")
 
         next_prefix = prefix + "  "
@@ -308,7 +307,7 @@ class CompilationXMLEngine:
 
         self.xml.append(f"{prefix}</term>\r")
 
-    def compile_expression_list(self, prefix="") -> int:
+    def compile_expression_list(self, prefix: str="") -> int:
         self.xml.append(f"{prefix}<expressionList>\r")
 
         if self.tokenizer.current_token() == ")":

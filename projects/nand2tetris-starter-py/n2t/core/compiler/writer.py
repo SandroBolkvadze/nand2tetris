@@ -2,8 +2,8 @@ from typing import Self
 
 
 class VMWriter:
-    def __init__(self):
-        self.vm = []
+    def __init__(self) -> None:
+        self.vm: list[str] = []
 
     def write_push(self, segment: str, index: int) -> Self:
         self.vm.append(f"push {segment} {index}")

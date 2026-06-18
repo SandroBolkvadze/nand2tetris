@@ -40,8 +40,8 @@ class JackProgram:
             )
 
 
-# if __name__ == "__main__":
-#     path = "/home/sandro/code/nand2tetris/nand2tetris/projects/nand2tetris-starter-py/tests/e2e/nand2tetris/projects/11"
-#     for dir in Path(path).iterdir():
-#         program = JackProgram(dir)
-#         program.compile()
+if __name__ == "__main__":
+    path = "/home/sandro/code/nand2tetris/nand2tetris/projects/nand2tetris-starter-py/tests/e2e/nand2tetris/projects/11"
+    for dir in Path(path).iterdir():
+        program = JackProgram(dir)
+        program.compile()

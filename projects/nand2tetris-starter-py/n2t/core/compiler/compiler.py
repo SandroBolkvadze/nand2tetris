@@ -5,7 +5,6 @@ from pathlib import Path
 from n2t.core.compiler.engine import CompilationEngine
 from n2t.core.compiler.tokenizer import JackTokenizer
 
-
 @dataclass
 class JackCompiler:
     path: Path

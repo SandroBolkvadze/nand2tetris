@@ -9,9 +9,9 @@ KIND_REGISTRY = {
 
 
 class SymbolTable:
-    def __init__(self):
-        self.entries = {}
-        self.counts = defaultdict(int)
+    def __init__(self) -> None:
+        self.entries: dict[str, dict[str, str | int]] = {}
+        self.counts: dict[str, int] = defaultdict(int)
 
     def define(self, symbol_name: str, symbol_type: str, symbol_kind: str) -> None:
         self.entries[symbol_name] = {
