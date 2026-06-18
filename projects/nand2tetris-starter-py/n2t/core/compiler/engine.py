@@ -1,19 +1,16 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-
 from n2t.core.compiler.constants import (
     IDENTIFIER,
     INT_CONST,
     KEYWORD_CONST,
     OP,
     STRING_CONST,
-    UNARY_OP,
+    UNARY_OP
 )
 from n2t.core.compiler.symbols import KIND_REGISTRY, SymbolTable
 from n2t.core.compiler.tokenizer import JackTokenizer
 from n2t.core.compiler.writer import VMWriter
-
 
 class CompilationEngine:
     def __init__(self, tokenizer: JackTokenizer) -> None:
@@ -56,13 +53,6 @@ class CompilationEngine:
         else:
             self.process(["int", "char", "boolean"])
 
-    def process_list(self, get_token: Callable[[], str]) -> None:
-        self.process(get_token())
-
-        while self.tokenizer.current_token() == ",":
-            self.process(",")
-            self.process(get_token())
-
     def process(self, expected: list[str] | str = "") -> None:
         if isinstance(expected, str):
             expected = [expected]
@@ -74,7 +64,6 @@ class CompilationEngine:
             raise Exception(f"Expected {expected}, Got {self.tokenizer.keyword()}")
 
     def compile_class(self) -> None:
-
         self.process("class")
         self.class_name = self.tokenizer.identifier()
         self.process(self.class_name)
@@ -92,12 +81,9 @@ class CompilationEngine:
         self.process("}")
 
     def compile_class_var_dec(self) -> None:
-
         # process class vars
         symbol_kind = self.tokenizer.current_token()
-        self.process(
-            ["static", "field"],
-        )
+        self.process(["static", "field"])
 
         symbol_type = self.tokenizer.current_token()
         self.process_type()
@@ -166,14 +152,14 @@ class CompilationEngine:
         while self.tokenizer.current_token() == "var":
             self.compile_var_dec()
 
-        nvargs = self.subroutine_symbol_table.var_count(KIND_REGISTRY["var"])
+        n_vargs = self.subroutine_symbol_table.var_count(KIND_REGISTRY["var"])
         self.vm_writer.write_function(
-            f"{self.class_name}.{self.subroutine_name}", nvargs
+            f"{self.class_name}.{self.subroutine_name}", n_vargs
         )
 
         if self.subroutine_type == "constructor":
-            nfields = self.class_symbol_table.var_count(KIND_REGISTRY["field"])
-            self.vm_writer.write_push("constant", nfields)
+            n_fields = self.class_symbol_table.var_count(KIND_REGISTRY["field"])
+            self.vm_writer.write_push("constant", n_fields)
             self.vm_writer.write_call("Memory.alloc", 1)
             self.vm_writer.write_pop("pointer", 0)
 
@@ -185,7 +171,6 @@ class CompilationEngine:
         self.process("}")
 
     def compile_var_dec(self) -> None:
-
         symbol_kind = "var"
         self.process(symbol_kind)
 
@@ -208,7 +193,6 @@ class CompilationEngine:
         self.process(";")
 
     def compile_statements(self) -> None:
-
         while self.tokenizer.current_token() != "}":
             match self.tokenizer.current_token():
                 case "let":
@@ -225,7 +209,6 @@ class CompilationEngine:
                     raise Exception(f"Bad token {self.tokenizer.current_token()}")
 
     def compile_let(self) -> None:
-
         self.process("let")
 
         var_name = self.tokenizer.identifier()
@@ -354,12 +337,13 @@ class CompilationEngine:
 
         if current_token in KEYWORD_CONST:
             match current_token:
-                case "false" | "null":
-                    self.vm_writer.write_push("constant", 0)
                 case "true":
                     self.vm_writer.write_push("constant", 0).write_arithmetic("not")
                 case "this":
                     self.vm_writer.write_push("pointer", 0)
+                case "false" | "null":
+                    self.vm_writer.write_push("constant", 0)
+
             self.process(current_token)
             return
 
@@ -387,10 +371,6 @@ class CompilationEngine:
                 self.vm_writer.write_call(f"{self.class_name}.{prev_token}", nargs + 1)
             case "[":
                 result = self.find_var_name(prev_token)
-                if not result:
-                    raise Exception(f"{prev_token} variable should be defined")
-
-                result = self.find_var_name(prev_token)
                 if result is None:
                     raise Exception(f"Variable {prev_token} not defined")
 
@@ -409,9 +389,7 @@ class CompilationEngine:
             case ".":
                 self.process(".")
                 subroutine_name = self.tokenizer.identifier()
-                self.process(
-                    subroutine_name,
-                )
+                self.process(subroutine_name)
                 self.process("(")
 
                 result = self.find_var_name(prev_token)
@@ -439,7 +417,6 @@ class CompilationEngine:
             return 0
 
         num_expressions = 1
-
         self.compile_expression()
 
         while self.tokenizer.current_token() == ",":
@@ -448,16 +425,3 @@ class CompilationEngine:
             num_expressions += 1
 
         return num_expressions
-
-
-# if __name__ == "__main__":
-#     tokenizer = JackTokenizer(
-#         "/home/sandro/code/nand2tetris/nand2tetris/projects/nand2tetris-starter-py/Test.jack"
-#     )
-#     analyzer = CompilationEngine(tokenizer)
-#
-#     print(analyzer.class_symbol_table.entries)
-#     print(analyzer.subroutine_symbol_table.entries)
-#
-#     print("\n".join(analyzer.vm_writer.vm))
-# print("\n".join(analyzer.xml))
