@@ -3,9 +3,9 @@ from pathlib import Path
 
 from n2t.infra.io import File
 
-keyword = ["class", "constructor", "function", "method", "field", "static", "var", "int", "char", "boolean", "void", "true", "false", "null", "this", "let", "do", "if", "else", "while", "return"]
+KEYWORDS = ["class", "constructor", "function", "method", "field", "static", "var", "int", "char", "boolean", "void", "true", "false", "null", "this", "let", "do", "if", "else", "while", "return"]
 
-symbols = ["{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"]
+SYMBOLS = ["{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"]
 
 KEYWORD      = "keyword"
 SYMBOL       = "symbol"
@@ -62,7 +62,7 @@ class JackTokenizer:
             if self._align() or self.position == len(self.content):
                 break
             ch = self.content[self.position]
-            if ch == " " or ch in symbols or token in symbols:
+            if ch == " " or ch in SYMBOLS or token in SYMBOLS:
                 break
             token += ch; self.position += 1
 
@@ -72,9 +72,9 @@ class JackTokenizer:
         return token
 
     def token_type(self) -> str:
-        if self.token in keyword:
+        if self.token in KEYWORDS:
             return KEYWORD
-        elif self.token in symbols:
+        elif self.token in SYMBOLS:
             return SYMBOL
         elif self.token.isdigit():
             return INT_CONST
