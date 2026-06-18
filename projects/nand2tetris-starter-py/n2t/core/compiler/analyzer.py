@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Iterable
 
 from n2t.core.compiler.engine import CompilationEngine
+from n2t.core.compiler.generator import CompilationEngineV1
 from n2t.core.compiler.tokenizer import JackTokenizer
 
 
@@ -40,4 +41,12 @@ class JackAnalyzerV1:
     def analyze(self) -> Iterable[str]:
         engine = CompilationEngine(JackTokenizer(str(self.path)))
         return engine.xml
+
+@dataclass
+class JackAnalyzerV2:
+    path: Path
+
+    def analyze(self) -> Iterable[str]:
+        engine = CompilationEngineV1(JackTokenizer(str(self.path)))
+        return engine.vm_writer.vm
 
