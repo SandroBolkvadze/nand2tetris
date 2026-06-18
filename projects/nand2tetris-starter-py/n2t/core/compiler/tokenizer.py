@@ -13,7 +13,6 @@ IDENTIFIER   = "identifier"
 INT_CONST    = "integerConstant"
 STRING_CONST = "stringConstant"
 
-
 @dataclass
 class JackTokenizer:
     def __init__(self, path: str) -> None:

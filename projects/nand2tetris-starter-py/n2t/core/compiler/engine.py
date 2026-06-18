@@ -10,7 +10,9 @@ KEYWORD_CONST = ["true", "false", "null", "this"]
 
 class CompilationEngine:
     def __init__(self, tokenizer: JackTokenizer) -> None:
-        self.xml = []; self.tokenizer = tokenizer; self.tokenizer.advance()
+        self.xml = []
+        self.tokenizer = tokenizer
+        self.tokenizer.advance()
         self.compile_class()
 
     def print_xml_token(self, token: str, prefix="") -> None:
@@ -316,6 +318,7 @@ class CompilationEngine:
 
         self.xml.append(f"{prefix}</expressionList>\r")
         return num_expressions
+
 
 if __name__ == "__main__":
     tokenizer = JackTokenizer("/home/sandro/code/nand2tetris/nand2tetris/projects/nand2tetris-starter-py/Test.jack")
