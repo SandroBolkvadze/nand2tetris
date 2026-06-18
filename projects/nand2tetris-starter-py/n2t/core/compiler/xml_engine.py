@@ -328,12 +328,3 @@ class CompilationXMLEngine:
 
         self.xml.append(f"{prefix}</expressionList>\r")
         return num_expressions
-
-
-# if __name__ == "__main__":
-#     tokenizer = JackTokenizer(
-#         "/home/sandro/code/nand2tetris/nand2tetris/projects/nand2tetris-starter-py/Test.jack"
-#     )
-#     analyzer = CompilationXMLEngine(tokenizer)
-#
-#     print("\n".join(analyzer.xml))

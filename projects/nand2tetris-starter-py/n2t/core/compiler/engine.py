@@ -6,11 +6,12 @@ from n2t.core.compiler.constants import (
     KEYWORD_CONST,
     OP,
     STRING_CONST,
-    UNARY_OP
+    UNARY_OP,
 )
 from n2t.core.compiler.symbols import KIND_REGISTRY, SymbolTable
 from n2t.core.compiler.tokenizer import JackTokenizer
 from n2t.core.compiler.writer import VMWriter
+
 
 class CompilationEngine:
     def __init__(self, tokenizer: JackTokenizer) -> None:
@@ -105,9 +106,7 @@ class CompilationEngine:
         self.subroutine_symbol_table = SymbolTable()
 
         self.subroutine_type = self.tokenizer.current_token()
-        self.process(
-            ["constructor", "function", "method"],
-        )
+        self.process(["constructor", "function", "method"])
         if self.tokenizer.current_token() == "void":
             self.subroutine_return_type = "void"
             self.process("void")
@@ -147,7 +146,6 @@ class CompilationEngine:
                 self.process(",")
 
     def compile_subroutine_body(self) -> None:
-
         self.process("{")
         while self.tokenizer.current_token() == "var":
             self.compile_var_dec()
