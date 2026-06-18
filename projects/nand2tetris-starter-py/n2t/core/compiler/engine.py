@@ -2,14 +2,16 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from n2t.core.compiler.constants import KEYWORD_CONST, OP, UNARY_OP
-from n2t.core.compiler.symbols import KIND_REGISTRY, SymbolTable
-from n2t.core.compiler.tokenizer import (
+from n2t.core.compiler.constants import (
     IDENTIFIER,
     INT_CONST,
+    KEYWORD_CONST,
+    OP,
     STRING_CONST,
-    JackTokenizer,
+    UNARY_OP,
 )
+from n2t.core.compiler.symbols import KIND_REGISTRY, SymbolTable
+from n2t.core.compiler.tokenizer import JackTokenizer
 from n2t.core.compiler.writer import VMWriter
 
 
@@ -19,7 +21,7 @@ class CompilationEngine:
         self.tokenizer.advance()
 
         self.branch_count = 0
-        self.subroutine_type = self.subroutine_name = self.subroutine_return_type = None
+        self.subroutine_type = self.subroutine_name = self.subroutine_return_type = ""
 
         self.class_symbol_table = SymbolTable()
         self.subroutine_symbol_table = SymbolTable()
@@ -48,13 +50,13 @@ class CompilationEngine:
         self.branch_count += 1
         return label
 
-    def process_type(self):
+    def process_type(self) -> None:
         if self.tokenizer.token_type() == IDENTIFIER:
             self.process(self.tokenizer.identifier())
         else:
             self.process(["int", "char", "boolean"])
 
-    def process_list(self, get_token: Callable[[], str]):
+    def process_list(self, get_token: Callable[[], str]) -> None:
         self.process(get_token())
 
         while self.tokenizer.current_token() == ",":
@@ -228,7 +230,12 @@ class CompilationEngine:
 
         var_name = self.tokenizer.identifier()
         self.process(var_name)
-        symbol_type, symbol_kind, symbol_index = self.find_var_name(var_name)
+        result = self.find_var_name(var_name)
+
+        if result is None:
+            raise Exception(f"Variable {var_name} not defined")
+
+        symbol_type, symbol_kind, symbol_index = result
 
         if self.tokenizer.current_token() == "[":
             self.vm_writer.write_push(symbol_kind, symbol_index)
@@ -383,7 +390,11 @@ class CompilationEngine:
                 if not result:
                     raise Exception(f"{prev_token} variable should be defined")
 
-                symbol_type, symbol_kind, symbol_index = self.find_var_name(prev_token)
+                result = self.find_var_name(prev_token)
+                if result is None:
+                    raise Exception(f"Variable {prev_token} not defined")
+
+                symbol_type, symbol_kind, symbol_index = result
 
                 self.vm_writer.write_push(symbol_kind, symbol_index)
 

@@ -17,7 +17,8 @@ from n2t.infra.io import File
 class JackTokenizer:
     def __init__(self, path: str) -> None:
         self.content = "".join(f"{line}\n" for line in File(Path(path)).load())
-        self.token = self.is_str = None
+        self.token = ""
+        self.is_str = False
         self.position = 0
 
     def _align(self) -> bool:

@@ -1,25 +1,34 @@
 from collections import defaultdict
+from dataclasses import dataclass
 
 KIND_REGISTRY = {
+    "var": "local",
     "field": "this",
     "static": "static",
     "argument": "argument",
-    "var": "local",
 }
+
+
+@dataclass
+class Symbol:
+    name: str
+    type: str
+    kind: str
+    index: int
 
 
 class SymbolTable:
     def __init__(self) -> None:
-        self.entries: dict[str, dict[str, str | int]] = {}
+        self.entries: dict[str, Symbol] = {}
         self.counts: dict[str, int] = defaultdict(int)
 
     def define(self, symbol_name: str, symbol_type: str, symbol_kind: str) -> None:
-        self.entries[symbol_name] = {
-            "name": symbol_name,
-            "type": symbol_type,
-            "kind": symbol_kind,
-            "index": self.counts[symbol_kind],
-        }
+        self.entries[symbol_name] = Symbol(
+            symbol_name,
+            symbol_type,
+            symbol_kind,
+            self.counts[symbol_kind],
+        )
 
         self.counts[symbol_kind] += 1
 
@@ -27,15 +36,15 @@ class SymbolTable:
         return self.counts[symbol_kind]
 
     def kind_of(self, symbol_name: str) -> str:
-        return self.entries[symbol_name]["kind"]
+        return self.entries[symbol_name].kind
 
     def type_of(self, symbol_name: str) -> str:
-        return self.entries[symbol_name]["type"]
+        return self.entries[symbol_name].type
 
     def index_of(self, symbol_name: str) -> int:
-        return self.entries[symbol_name]["index"]
+        return self.entries[symbol_name].index
 
-    def contains(self, symbol_name) -> bool:
+    def contains(self, symbol_name: str) -> bool:
         return symbol_name in self.entries
 
 
