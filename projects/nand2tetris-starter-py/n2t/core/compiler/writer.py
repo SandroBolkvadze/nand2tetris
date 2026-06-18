@@ -2,7 +2,6 @@ from typing import Self
 
 
 class VMWriter:
-
     def __init__(self):
         self.vm = []
 
@@ -64,13 +63,9 @@ class VMWriter:
         return self
 
     def write_return(self) -> Self:
-        self.vm.append(f"return")
+        self.vm.append("return")
         return self
 
     def write_custom(self, vm_code: str) -> Self:
         self.vm.append(vm_code)
         return self
-
-
-
-

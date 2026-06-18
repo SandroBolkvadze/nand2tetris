@@ -13,7 +13,6 @@ _TEST_PROGRAMS = ["ArrayTest", "Square", "ExpressionLessSquare"]
 # @pytest.mark.skip
 @pytest.mark.parametrize("test_directory", _TEST_PROGRAMS)
 def test_should_analyze_on_files(test_directory: str, jacks_directory: Path) -> None:
-    print("\nTest start")
     projects_directory_path = os.path.join(jacks_directory, test_directory)
     file_path = os.path.join(projects_directory_path, "Main.jack")
     run_compiler(file_path)

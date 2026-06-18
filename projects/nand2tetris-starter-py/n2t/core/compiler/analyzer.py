@@ -1,10 +1,9 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
 
-from n2t.core.compiler.engine import CompilationEngine
-from n2t.core.compiler.generator import CompilationEngineV1
 from n2t.core.compiler.tokenizer import JackTokenizer
+from n2t.core.compiler.xml_engine import CompilationXMLEngine
 
 
 @dataclass
@@ -25,7 +24,7 @@ class JackAnalyzerV0:
                 token = "&gt;"
             elif token == "&":
                 token = "&amp;"
-            elif token == "\"":
+            elif token == '"':
                 token = "&quot;"
 
             xml.append(f"<{token_type}> {token} </{token_type}>\r")
@@ -39,14 +38,14 @@ class JackAnalyzerV1:
     path: Path
 
     def analyze(self) -> Iterable[str]:
-        engine = CompilationEngine(JackTokenizer(str(self.path)))
+        engine = CompilationXMLEngine(JackTokenizer(str(self.path)))
         return engine.xml
 
-@dataclass
-class JackAnalyzerV2:
-    path: Path
 
-    def analyze(self) -> Iterable[str]:
-        engine = CompilationEngineV1(JackTokenizer(str(self.path)))
-        return engine.vm_writer.vm
-
+# @dataclass
+# class JackAnalyzerV2:
+#     path: Path
+#
+#     def analyze(self) -> Iterable[str]:
+#         engine = CompilationEngine(JackTokenizer(str(self.path)))
+#         return engine.vm_writer.vm

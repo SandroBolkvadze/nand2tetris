@@ -1,332 +1,452 @@
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
-from n2t.core.compiler.tokenizer import JackTokenizer, IDENTIFIER, INT_CONST, STRING_CONST
+from n2t.core.compiler.constants import KEYWORD_CONST, OP, UNARY_OP
+from n2t.core.compiler.symbols import KIND_REGISTRY, SymbolTable
+from n2t.core.compiler.tokenizer import (
+    IDENTIFIER,
+    INT_CONST,
+    STRING_CONST,
+    JackTokenizer,
+)
+from n2t.core.compiler.writer import VMWriter
 
-OP            = ["+", "-", "*", "/", "&", "|", "<", ">", "="]
-UNARY_OP      = ["-", "~"]
-KEYWORD_CONST = ["true", "false", "null", "this"]
 
 class CompilationEngine:
     def __init__(self, tokenizer: JackTokenizer) -> None:
-        self.xml = []
         self.tokenizer = tokenizer
         self.tokenizer.advance()
+
+        self.branch_count = 0
+        self.subroutine_type = self.subroutine_name = self.subroutine_return_type = None
+
+        self.class_symbol_table = SymbolTable()
+        self.subroutine_symbol_table = SymbolTable()
+
+        self.vm_writer = VMWriter()
+
         self.compile_class()
 
-    def print_xml_token(self, token: str, prefix="") -> None:
-        token_type = self.tokenizer.token_type()
+    def find_var_name(self, var_name: str) -> tuple[str, str, int] | None:
+        if self.subroutine_symbol_table.contains(var_name):
+            return (
+                self.subroutine_symbol_table.type_of(var_name),
+                self.subroutine_symbol_table.kind_of(var_name),
+                self.subroutine_symbol_table.index_of(var_name),
+            )
+        if self.class_symbol_table.contains(var_name):
+            return (
+                self.class_symbol_table.type_of(var_name),
+                self.class_symbol_table.kind_of(var_name),
+                self.class_symbol_table.index_of(var_name),
+            )
+        return None
 
-        if token == "<":
-            token = "&lt;"
-        elif token == ">":
-            token = "&gt;"
-        elif token == "&":
-            token = "&amp;"
-        elif token == "\"":
-            token = "&quot;"
+    def generate_label(self) -> str:
+        label = f"{self.class_name}.label.{self.branch_count}"
+        self.branch_count += 1
+        return label
 
-        self.xml.append(f"{prefix}<{token_type}> {token} </{token_type}>\r")
-
-    def process_type(self, prefix=""):
+    def process_type(self):
         if self.tokenizer.token_type() == IDENTIFIER:
-            self.process(self.tokenizer.identifier(), prefix)
+            self.process(self.tokenizer.identifier())
         else:
-            self.process(["int", "char", "boolean"], prefix)
+            self.process(["int", "char", "boolean"])
 
-    def process_list(self, get_token: Callable[[], str], prefix=""):
-        self.process(get_token(), prefix)
+    def process_list(self, get_token: Callable[[], str]):
+        self.process(get_token())
 
         while self.tokenizer.current_token() == ",":
-            self.process(",", prefix)
-            self.process(get_token(), prefix)
+            self.process(",")
+            self.process(get_token())
 
-    def process(self, expected: list[str] | str, prefix="") -> None:
-        # for convenience
+    def process(self, expected: list[str] | str = "") -> None:
         if isinstance(expected, str):
             expected = [expected]
 
         current = self.tokenizer.current_token()
         if current in expected:
-            self.print_xml_token(current, prefix)
             self.tokenizer.advance()
         else:
             raise Exception(f"Expected {expected}, Got {self.tokenizer.keyword()}")
 
-    def compile_class(self, prefix="") -> None:
-        self.xml.append(f"{prefix}<class>\r")
+    def compile_class(self) -> None:
 
-        next_prefix = prefix + "  "
-
-        self.process("class", next_prefix)
-        self.process(self.tokenizer.identifier(), next_prefix)
-        self.process("{", next_prefix)
+        self.process("class")
+        self.class_name = self.tokenizer.identifier()
+        self.process(self.class_name)
+        self.process("{")
 
         while True:
             match self.tokenizer.current_token():
                 case "static" | "field":
-                    self.compile_class_var_dec(next_prefix)
+                    self.compile_class_var_dec()
                 case "constructor" | "function" | "method":
-                    self.compile_subroutine_dec(next_prefix)
+                    self.compile_subroutine_dec()
                 case _:
                     break
 
-        self.process("}", next_prefix)
-        self.xml.append(f"{prefix}</class>\r")
+        self.process("}")
 
-    def compile_class_var_dec(self, prefix="") -> None:
-        self.xml.append(f"{prefix}<classVarDec>\r")
+    def compile_class_var_dec(self) -> None:
 
-        next_prefix = prefix + "  "
+        # process class vars
+        symbol_kind = self.tokenizer.current_token()
+        self.process(
+            ["static", "field"],
+        )
 
-        self.process(["static", "field"], next_prefix)
-        self.process_type(next_prefix)
-        self.process_list(self.tokenizer.identifier, next_prefix)
-        self.process(";", next_prefix)
-        self.xml.append(f"{prefix}</classVarDec>\r")
+        symbol_type = self.tokenizer.current_token()
+        self.process_type()
 
-    def compile_subroutine_dec(self, prefix="") -> None:
-        self.xml.append(f"{prefix}<subroutineDec>\r")
+        while self.tokenizer.current_token() != ";":
+            symbol_name = self.tokenizer.current_token()
+            self.process(symbol_name)
 
-        next_prefix = prefix + "  "
-        self.process(["constructor", "function", "method"], next_prefix)
+            self.class_symbol_table.define(
+                symbol_name, symbol_type, KIND_REGISTRY[symbol_kind]
+            )
+
+            if self.tokenizer.current_token() == ",":
+                self.process(",")
+
+        self.process(";")
+
+    def compile_subroutine_dec(self) -> None:
+        self.subroutine_symbol_table = SymbolTable()
+
+        self.subroutine_type = self.tokenizer.current_token()
+        self.process(
+            ["constructor", "function", "method"],
+        )
         if self.tokenizer.current_token() == "void":
-            self.process("void", next_prefix)
+            self.subroutine_return_type = "void"
+            self.process("void")
         else:
-            self.process_type(next_prefix)
+            self.subroutine_return_type = self.tokenizer.current_token()
+            self.process_type()
 
-        self.process(self.tokenizer.identifier(), next_prefix)
-        self.process("(", next_prefix)
-        self.compile_parameter_list(next_prefix)
-        self.process(")", next_prefix)
-        self.compile_subroutine_body(next_prefix)
+        if self.subroutine_type == "method":
+            self.subroutine_symbol_table.define("this", self.class_name, "argument")
+            pass
 
-        self.xml.append(f"{prefix}</subroutineDec>\r")
+        self.subroutine_name = self.tokenizer.identifier()
+        self.process(self.subroutine_name)
+        self.process("(")
+        self.compile_parameter_list()
+        self.process(")")
 
-    def compile_parameter_list(self, prefix="") -> None:
-        self.xml.append(f"{prefix}<parameterList>\r")
+        self.compile_subroutine_body()
 
+    def compile_parameter_list(self) -> None:
         if self.tokenizer.current_token() == ")":
-            self.xml.append(f"{prefix}</parameterList>\r")
             return
 
-        next_prefix = prefix + "  "
-        self.process_type(next_prefix)
-        self.process(self.tokenizer.identifier(), next_prefix)
+        # process subroutine arguments
+        while self.tokenizer.current_token() != ")":
+            symbol_type = self.tokenizer.current_token()
+            self.process(symbol_type)
 
-        while self.tokenizer.current_token() == ",":
-            self.process(",", next_prefix)
-            self.process_type(next_prefix)
-            self.process(self.tokenizer.identifier(), next_prefix)
+            symbol_name = self.tokenizer.current_token()
+            self.process(symbol_name)
 
-        self.xml.append(f"{prefix}</parameterList>\r")
+            self.subroutine_symbol_table.define(
+                symbol_name, symbol_type, KIND_REGISTRY["argument"]
+            )
 
-    def compile_subroutine_body(self, prefix="") -> None:
-        self.xml.append(f"{prefix}<subroutineBody>\r")
+            if self.tokenizer.current_token() == ",":
+                self.process(",")
 
-        next_prefix = prefix + "  "
-        self.process("{", next_prefix)
+    def compile_subroutine_body(self) -> None:
+
+        self.process("{")
         while self.tokenizer.current_token() == "var":
-            self.compile_var_dec(next_prefix)
+            self.compile_var_dec()
 
-        self.compile_statements(next_prefix)
-        self.process("}", next_prefix)
+        nvargs = self.subroutine_symbol_table.var_count(KIND_REGISTRY["var"])
+        self.vm_writer.write_function(
+            f"{self.class_name}.{self.subroutine_name}", nvargs
+        )
 
-        self.xml.append(f"{prefix}</subroutineBody>\r")
+        if self.subroutine_type == "constructor":
+            nfields = self.class_symbol_table.var_count(KIND_REGISTRY["field"])
+            self.vm_writer.write_push("constant", nfields)
+            self.vm_writer.write_call("Memory.alloc", 1)
+            self.vm_writer.write_pop("pointer", 0)
 
-    def compile_var_dec(self, prefix="") -> None:
-        self.xml.append(f"{prefix}<varDec>\r")
-        next_prefix = prefix + "  "
-        self.process("var", next_prefix)
-        self.process_type(next_prefix)
-        self.process_list(self.tokenizer.identifier, next_prefix)
-        self.process(";", next_prefix)
-        self.xml.append(f"{prefix}</varDec>\r")
+        elif self.subroutine_type == "method":
+            self.vm_writer.write_push("argument", 0)
+            self.vm_writer.write_pop("pointer", 0)
 
-    def compile_statements(self, prefix="") -> None:
-        self.xml.append(f"{prefix}<statements>\r")
+        self.compile_statements()
+        self.process("}")
 
-        next_prefix = prefix + "  "
+    def compile_var_dec(self) -> None:
+
+        symbol_kind = "var"
+        self.process(symbol_kind)
+
+        symbol_type = self.tokenizer.current_token()
+        self.process_type()
+
+        while self.tokenizer.current_token() != ";":
+            symbol_name = self.tokenizer.current_token()
+            self.process(symbol_name)
+
+            self.subroutine_symbol_table.define(
+                symbol_name, symbol_type, KIND_REGISTRY[symbol_kind]
+            )
+
+            if self.tokenizer.current_token() == ";":
+                break
+
+            self.process(",")
+
+        self.process(";")
+
+    def compile_statements(self) -> None:
+
         while self.tokenizer.current_token() != "}":
             match self.tokenizer.current_token():
                 case "let":
-                    self.compile_let(next_prefix)
+                    self.compile_let()
                 case "if":
-                    self.compile_if(next_prefix)
+                    self.compile_if()
                 case "while":
-                    self.compile_while(next_prefix)
+                    self.compile_while()
                 case "do":
-                    self.compile_do(next_prefix)
+                    self.compile_do()
                 case "return":
-                    self.compile_return(next_prefix)
+                    self.compile_return()
                 case _:
-                    raise Exception(f"Unexpected token in statements: {self.tokenizer.current_token()}")
+                    raise Exception(f"Bad token {self.tokenizer.current_token()}")
 
-        self.xml.append(f"{prefix}</statements>\r")
+    def compile_let(self) -> None:
 
-    def compile_let(self, prefix="") -> None:
-        self.xml.append(f"{prefix}<letStatement>\r")
+        self.process("let")
 
-        next_prefix = prefix + "  "
-        self.process("let", next_prefix)
-        self.process(self.tokenizer.identifier(), next_prefix)
+        var_name = self.tokenizer.identifier()
+        self.process(var_name)
+        symbol_type, symbol_kind, symbol_index = self.find_var_name(var_name)
+
         if self.tokenizer.current_token() == "[":
-            self.process("[", next_prefix)
-            self.compile_expression(next_prefix)
-            self.process("]", next_prefix)
+            self.vm_writer.write_push(symbol_kind, symbol_index)
 
-        self.process("=", next_prefix)
-        self.compile_expression(next_prefix)
-        self.process(";", next_prefix)
+            self.process("[")
+            self.compile_expression()
+            self.process("]")
 
-        self.xml.append(f"{prefix}</letStatement>\r")
+            self.vm_writer.write_arithmetic("+")
 
-    def compile_if(self, prefix="") -> None:
-        self.xml.append(f"{prefix}<ifStatement>\r")
+            self.process("=")
+            self.compile_expression()
+            self.process(";")
 
-        next_prefix = prefix + "  "
-        self.process("if", next_prefix)
-        self.process("(", next_prefix)
-        self.compile_expression(next_prefix)
-        self.process(")", next_prefix)
-        self.process("{", next_prefix)
-        self.compile_statements(next_prefix)
-        self.process("}", next_prefix)
+            self.vm_writer.write_pop("temp", 0)
+            self.vm_writer.write_pop("pointer", 1)
+            self.vm_writer.write_push("temp", 0)
+            self.vm_writer.write_pop("that", 0)
+        else:
+            self.process("=")
+            self.compile_expression()
+            self.vm_writer.write_pop(symbol_kind, symbol_index)
+            self.process(";")
+
+    def compile_if(self) -> None:
+        label1 = self.generate_label()
+        label2 = self.generate_label()
+
+        self.process("if")
+        self.process("(")
+        self.compile_expression()
+        self.process(")")
+
+        self.vm_writer.write_arithmetic("not")
+        self.vm_writer.write_if(label1)
+
+        self.process("{")
+        self.compile_statements()
+        self.process("}")
+
+        self.vm_writer.write_goto(label2)
+        self.vm_writer.write_label(label1)
 
         if self.tokenizer.current_token() == "else":
-            self.process("else", next_prefix)
-            self.process("{", next_prefix)
-            self.compile_statements(next_prefix)
-            self.process("}", next_prefix)
+            self.process("else")
+            self.process("{")
+            self.compile_statements()
+            self.process("}")
 
-        self.xml.append(f"{prefix}</ifStatement>\r")
+        self.vm_writer.write_label(label2)
 
-    def compile_while(self, prefix="") -> None:
-        self.xml.append(f"{prefix}<whileStatement>\r")
+    def compile_while(self) -> None:
+        label1 = self.generate_label()
+        label2 = self.generate_label()
 
-        next_prefix = prefix + "  "
-        self.process("while", next_prefix)
-        self.process("(", next_prefix)
-        self.compile_expression(next_prefix)
-        self.process(")", next_prefix)
-        self.process("{", next_prefix)
-        self.compile_statements(next_prefix)
-        self.process("}", next_prefix)
+        self.vm_writer.write_label(label1)
 
-        self.xml.append(f"{prefix}</whileStatement>\r")
+        self.process("while")
+        self.process("(")
+        self.compile_expression()
+        self.process(")")
 
-    def compile_do(self, prefix="") -> None:
-        self.xml.append(f"{prefix}<doStatement>\r")
-        next_prefix = prefix + "  "
-        self.process("do", next_prefix)
+        self.vm_writer.write_arithmetic("not")
+        self.vm_writer.write_if(label2)
 
-        self.process(self.tokenizer.identifier(), next_prefix)
+        self.process("{")
+        self.compile_statements()
+        self.process("}")
+        self.vm_writer.write_goto(label1)
 
-        if self.tokenizer.current_token() == "(":
-            self.process("(", next_prefix)
-            self.compile_expression_list(next_prefix)
-            self.process(")", next_prefix)
-        else:
-            self.process(".", next_prefix)
-            self.process(self.tokenizer.identifier(), next_prefix)
-            self.process("(", next_prefix)
-            self.compile_expression_list(next_prefix)
-            self.process(")", next_prefix)
+        self.vm_writer.write_label(label2)
 
-        self.process(";", next_prefix)
-        self.xml.append(f"{prefix}</doStatement>\r")
+    def compile_do(self) -> None:
+        self.process("do")
+        self.compile_expression()
+        self.vm_writer.write_pop("temp", 0)
+        self.process(";")
 
-    def compile_return(self, prefix="") -> None:
-        self.xml.append(f"{prefix}<returnStatement>\r")
-        next_prefix = prefix + "  "
-        self.process("return", next_prefix)
+    def compile_return(self) -> None:
+        self.process("return")
         if self.tokenizer.current_token() != ";":
-            self.compile_expression(next_prefix)
-        self.process(";", next_prefix)
-        self.xml.append(f"{prefix}</returnStatement>\r")
+            self.compile_expression()
+        else:
+            self.vm_writer.write_push("constant", 0)
 
-    def compile_expression(self, prefix="") -> None:
-        self.xml.append(f"{prefix}<expression>\r")
+        self.vm_writer.write_return()
+        self.process(";")
 
-        next_prefix = prefix + "  "
-        self.compile_term(next_prefix)
+    def compile_expression(self) -> None:
+        self.compile_term()
 
         while self.tokenizer.current_token() in OP:
-            self.process(self.tokenizer.symbol(), next_prefix)
-            self.compile_term(next_prefix)
+            op = self.tokenizer.current_token()
+            self.process(op)
+            self.compile_term()
+            self.vm_writer.write_arithmetic(op)
 
-        self.xml.append(f"{prefix}</expression>\r")
+    def compile_term(self) -> None:
+        current_token = self.tokenizer.current_token()
 
-    def compile_term(self, prefix="") -> None:
-        self.xml.append(f"{prefix}<term>\r")
-
-        next_prefix = prefix + "  "
-
-        if self.tokenizer.token_type() in [INT_CONST, STRING_CONST] or self.tokenizer.current_token() in KEYWORD_CONST:
-            self.process(self.tokenizer.current_token(), next_prefix)
-            self.xml.append(f"{prefix}</term>\r")
+        if self.tokenizer.token_type() == INT_CONST:
+            self.vm_writer.write_push("constant", int(current_token))
+            self.process(current_token)
             return
 
-        if self.tokenizer.current_token() in UNARY_OP:
-            self.process(self.tokenizer.current_token(), next_prefix)
-            self.compile_term(next_prefix)
-            self.xml.append(f"{prefix}</term>\r")
+        if self.tokenizer.token_type() == STRING_CONST:
+            self.vm_writer.write_push("constant", len(current_token))
+            self.vm_writer.write_call("String.new", 1)
+
+            for ch in current_token:
+                self.vm_writer.write_push("constant", ord(ch))
+                self.vm_writer.write_call("String.appendChar", 2)
+
+            self.process(current_token)
             return
 
-        if self.tokenizer.current_token() == "(":
-            self.process("(", next_prefix)
-            self.compile_expression(next_prefix)
-            self.process(")", next_prefix)
-            self.xml.append(f"{prefix}</term>\r")
+        if current_token in KEYWORD_CONST:
+            match current_token:
+                case "false" | "null":
+                    self.vm_writer.write_push("constant", 0)
+                case "true":
+                    self.vm_writer.write_push("constant", 0).write_arithmetic("not")
+                case "this":
+                    self.vm_writer.write_push("pointer", 0)
+            self.process(current_token)
             return
 
-        self.process(self.tokenizer.identifier(), next_prefix)
+        if current_token in UNARY_OP:
+            self.process(current_token)
+            self.compile_term()
+            self.vm_writer.write_arithmetic("neg" if current_token == "-" else "not")
+            return
+
+        if current_token == "(":
+            self.process("(")
+            self.compile_expression()
+            self.process(")")
+            return
+
+        prev_token = self.tokenizer.current_token()
+        self.process(prev_token)
 
         match self.tokenizer.current_token():
             case "(":
-                self.process("(", next_prefix)
-                self.compile_expression_list(next_prefix)
-                self.process(")", next_prefix)
+                self.vm_writer.write_push("pointer", 0)
+                self.process("(")
+                nargs = self.compile_expression_list()
+                self.process(")")
+                self.vm_writer.write_call(f"{self.class_name}.{prev_token}", nargs + 1)
             case "[":
-                self.process("[", next_prefix)
-                self.compile_expression(next_prefix)
-                self.process("]", next_prefix)
+                result = self.find_var_name(prev_token)
+                if not result:
+                    raise Exception(f"{prev_token} variable should be defined")
+
+                symbol_type, symbol_kind, symbol_index = self.find_var_name(prev_token)
+
+                self.vm_writer.write_push(symbol_kind, symbol_index)
+
+                self.process("[")
+                self.compile_expression()
+                self.process("]")
+
+                self.vm_writer.write_arithmetic("+")
+                self.vm_writer.write_pop("pointer", 1)
+                self.vm_writer.write_push("that", 0)
+
             case ".":
-                self.process(".", next_prefix)
-                self.process(self.tokenizer.identifier(), next_prefix)
-                self.process("(", next_prefix)
-                self.compile_expression_list(next_prefix)
-                self.process(")", next_prefix)
+                self.process(".")
+                subroutine_name = self.tokenizer.identifier()
+                self.process(
+                    subroutine_name,
+                )
+                self.process("(")
+
+                result = self.find_var_name(prev_token)
+                if result:
+                    symbol_type, symbol_kind, symbol_index = result
+                    self.vm_writer.write_push(symbol_kind, symbol_index)
+                    nargs = self.compile_expression_list()
+                    self.vm_writer.write_call(
+                        f"{symbol_type}.{subroutine_name}", nargs + 1
+                    )
+                else:
+                    nargs = self.compile_expression_list()
+                    self.vm_writer.write_call(f"{prev_token}.{subroutine_name}", nargs)
+
+                self.process(")")
+
             case _:
-                pass
+                result = self.find_var_name(prev_token)
+                if result:
+                    _, symbol_kind, symbol_index = result
+                    self.vm_writer.write_push(symbol_kind, symbol_index)
 
-        self.xml.append(f"{prefix}</term>\r")
-
-
-    def compile_expression_list(self, prefix="") -> int:
-        self.xml.append(f"{prefix}<expressionList>\r")
-
+    def compile_expression_list(self) -> int:
         if self.tokenizer.current_token() == ")":
-            self.xml.append(f"{prefix}</expressionList>\r")
             return 0
 
         num_expressions = 1
-        next_prefix = prefix + "  "
-        self.compile_expression(next_prefix)
+
+        self.compile_expression()
 
         while self.tokenizer.current_token() == ",":
-            self.process(",", next_prefix)
-            self.compile_expression(next_prefix)
+            self.process(",")
+            self.compile_expression()
             num_expressions += 1
 
-        self.xml.append(f"{prefix}</expressionList>\r")
         return num_expressions
 
 
-if __name__ == "__main__":
-    tokenizer = JackTokenizer("/home/sandro/code/nand2tetris/nand2tetris/projects/nand2tetris-starter-py/Test.jack")
-    analyzer = CompilationEngine(tokenizer)
-
-    print("\n".join(analyzer.xml))
-
+# if __name__ == "__main__":
+#     tokenizer = JackTokenizer(
+#         "/home/sandro/code/nand2tetris/nand2tetris/projects/nand2tetris-starter-py/Test.jack"
+#     )
+#     analyzer = CompilationEngine(tokenizer)
+#
+#     print(analyzer.class_symbol_table.entries)
+#     print(analyzer.subroutine_symbol_table.entries)
+#
+#     print("\n".join(analyzer.vm_writer.vm))
+# print("\n".join(analyzer.xml))

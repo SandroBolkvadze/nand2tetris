@@ -7,6 +7,7 @@ KIND_REGISTRY = {
     "var": "local",
 }
 
+
 class SymbolTable:
     def __init__(self):
         self.entries = {}
@@ -17,7 +18,7 @@ class SymbolTable:
             "name": symbol_name,
             "type": symbol_type,
             "kind": symbol_kind,
-            "index": self.counts[symbol_kind]
+            "index": self.counts[symbol_kind],
         }
 
         self.counts[symbol_kind] += 1
@@ -37,12 +38,9 @@ class SymbolTable:
     def contains(self, symbol_name) -> bool:
         return symbol_name in self.entries
 
+
 if __name__ == "__main__":
     s = SymbolTable()
 
     s.define("a", "int", "field")
     s.define("b", "boolean", "field")
-
-
-
-
