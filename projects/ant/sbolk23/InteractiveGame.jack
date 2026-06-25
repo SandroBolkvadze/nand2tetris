@@ -1,0 +1,155 @@
+class InteractiveGame {
+    field String promptLoc, promptDir, stepsMsg, pressMsg, randMsg;
+
+    constructor InteractiveGame new() {
+        let stepsMsg  = "Number of steps taken: ";
+        let pressMsg  = "Press any key to begin...";
+        let promptDir = "Enter initial direction ('L', 'U', 'R', 'D'): ";
+        let promptLoc = "Enter initial x and y coordinates (separated with whitespace): ";
+        let randMsg   = "Generating random location, please wait for a couple of seconds... (speed can be increased by reducing number of cycles in Random.jack)";
+        return this;
+    }
+    method void run() {
+        var int steps;
+        var Random2d random;
+        var Display2d display;
+        var Location2d location;
+        var Direction2d direction;
+        var FiniteGame finiteGame;
+
+        do Screen.clearScreen();
+        do Output.printString(pressMsg);
+        do Output.println();
+        let random = Random2d.new(InteractiveGame.timeSeed());
+
+        while (true) {
+            let display = Display2d.new(false);
+
+            let location = promptLocation();
+
+            if (location = null) {
+                do Output.printString(randMsg);
+                do Output.println();
+                let location = random.random();
+            }
+
+            let direction = promptDirection(); 
+
+            let finiteGame = FiniteGame.new(Game.new(location, direction, display), 512, 256);
+
+            do display.clear();
+            do display.flipPixelAt(location.getX(), location.getY());
+
+            let steps = runGame(finiteGame);
+            
+            do display.clear();
+            do Output.moveCursor(0, 0);
+
+            do Output.printString(stepsMsg);
+            do Output.printInt(steps);
+            do Output.println();
+
+            do finiteGame.dispose();
+        }
+
+        return;
+    }
+
+    method int runGame(FiniteGame finiteGame) {
+        var int steps;
+        var char key;
+        var boolean paused, spacePressed;
+
+        let steps = 0;
+        let paused = true;
+        let spacePressed = false;
+
+        while (true) {
+            let key = Keyboard.keyPressed();
+
+            // 'SPACE' case
+            if (key = 32) {
+                if (~spacePressed) {
+                    let paused = ~paused;
+                    let spacePressed = true;
+                }
+            }
+            else {
+                let spacePressed = false;
+            }
+
+            // 'R' case
+            if (key = 82) {
+                while (~(Keyboard.keyPressed() = 0)) {
+                }
+
+                return steps;
+            }
+
+            if (~paused) {
+                do finiteGame.step();
+                let steps = steps + 1;
+            }
+        }
+
+        return steps;
+    }
+
+    method Direction2d promptDirection() {
+        var String directionStr;
+        var Direction2d direction;
+        
+        let directionStr = Keyboard.readLine(promptDir);
+        let direction = Direction2d.new(directionStr.charAt(0));
+
+        do directionStr.dispose();
+        return direction;
+    }
+
+    method Location2d promptLocation() {
+        var int x, y, i;
+        var String location, strX, strY;
+        
+        let location = Keyboard.readLine(promptLoc);
+
+        if (location.length() = 0) {
+            do location.dispose();
+            return null;
+        }
+
+        let x = location.intValue();
+        let strX = String.new(5);
+        do strX.setInt(x);
+
+        let strY = String.new(location.length() - strX.length() - 1);
+
+        let i = strX.length() + 1;
+        while (i < location.length()) {
+            do strY.appendChar(location.charAt(i));
+            let i = i + 1;
+        }
+
+        let y = strY.intValue();
+
+        do location.dispose();
+        do strX.dispose();
+        do strY.dispose();
+
+        return Location2d.new(x, y);
+    }
+
+
+    function int timeSeed() {
+        var int tick;
+        let tick = 0;
+        while (Keyboard.keyPressed() = 0) {
+            let tick = tick + 1;
+        }
+
+        while (~(Keyboard.keyPressed() = 0)) {
+        }
+
+        return tick;
+    }
+
+}

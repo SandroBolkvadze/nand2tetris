@@ -1,0 +1,64 @@
+class Game {
+    field Display2d display;
+    field Location2d location;
+    field Direction2d direction;
+
+    constructor Game new(Location2d startLocation, Direction2d startDirection, Display2d startDisplay) {
+        let display = startDisplay;
+        let location = startLocation;
+        let direction = startDirection;
+
+        return this;
+    }
+
+    method void step() {
+        var int curX, curY;
+        var Location2d displacement;
+
+        let curX = location.getX();
+        let curY = location.getY();
+        
+        if (display.getPixelAt(curX, curY) = 0) {
+            do direction.turnClockwise();
+        }   
+        else {
+            do direction.turnCounterClockwise();
+        }
+
+        do display.flipPixelAt(curX, curY);
+        let displacement = direction.getDisplacement();
+        do location.add(displacement);
+        do displacement.dispose();
+
+        return;
+    }
+
+    method void setLocation2d(Location2d newLocation) {
+        do location.dispose();
+        let location = newLocation;
+        return;
+    }
+
+    method void setDirection(Direction2d newDirection) {
+        do direction.dispose();
+        let direction = newDirection;
+        return;
+    }
+
+    method Location2d getLocation2d() {
+        return location;
+    }
+
+    method Direction2d getDirection() {
+        return direction;
+    }
+
+    method void dispose() {
+        do display.dispose();
+        do location.dispose();
+        do direction.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+
+}

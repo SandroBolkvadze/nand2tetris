@@ -1,0 +1,10 @@
+class Main {
+
+    function void main() {
+        var InteractiveGame interactiveGame; 
+        let interactiveGame = InteractiveGame.new();
+        do interactiveGame.run();
+        return;
+    }
+
+}

@@ -1,0 +1,109 @@
+class Display2d {
+    field boolean silent;
+    field Array pixels;
+    field Array bitmasks;
+
+    constructor Display2d new(boolean isSilent) {
+        var int i, mask;
+        
+        let silent = isSilent;
+        if (silent) {
+            let pixels = Array.new(8192);
+        } 
+
+
+        let bitmasks = Array.new(16);
+        let i = 0;
+        let mask = 1;
+        while (i < 16) {
+            let bitmasks[i] = mask;
+            let mask = mask * 2;
+            let i = i + 1;
+        }
+
+        return this;
+    }
+
+    method int getPixelAt(int x, int y) {
+        var int i, mask, pixel, remainder, address, value, offset;
+
+        if (silent) {
+            let offset = 0;
+        }
+        else {
+            let offset = 16384;
+        }
+
+        let address = offset + (x / 16) + (y * 32);
+        let remainder = x - ((x / 16) * 16);
+
+        if (silent) {
+            let value = pixels[address];
+        }
+        else {
+            let value = Memory.peek(address);
+        }
+
+        let pixel = value & bitmasks[remainder];
+
+        if (pixel = 0) {
+            return 0;
+        }
+        else {
+            return 1;
+        }
+    }
+
+    method void flipPixelAt(int x, int y) {
+        var int i, mask, flippedPixel, address, remainder, value;
+
+        let flippedPixel = 1 - getPixelAt(x, y);
+
+        if (silent) {
+            let address = (x / 16) + (y * 32);
+            let remainder = x - ((x / 16) * 16);
+            let value = pixels[address];
+
+            if (flippedPixel = 0) {
+                let value = value & (~bitmasks[remainder]);
+            }
+            else {
+                let value = value | bitmasks[remainder];
+            }
+
+            let pixels[address] = value;
+        }
+        else {
+            do Screen.setColor(flippedPixel);
+            do Screen.drawPixel(x, y);
+        }
+
+        return;
+    }
+
+    method void clear() {
+        var int i;
+
+        if (silent) {
+            let i = 0;
+            while (i < 8192) {
+                let pixels[i] = 0;
+                let i = i + 1;
+            }
+        }
+        else {
+            do Screen.clearScreen();
+        }
+        return;
+    }
+
+    method void dispose() {
+        if (silent) {
+            do pixels.dispose();
+        }
+        do bitmasks.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+
+}

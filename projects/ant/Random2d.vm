@@ -1,0 +1,115 @@
+function Random2d.new 0
+push constant 6
+call Memory.alloc 1
+pop pointer 0
+push constant 4
+call Array.new 1
+pop this 5
+push constant 0
+push this 5
+add
+push constant 76
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push this 5
+add
+push constant 85
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push this 5
+add
+push constant 82
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push this 5
+add
+push constant 68
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+not
+call Display2d.new 1
+pop this 0
+push argument 0
+push constant 511
+and
+push argument 0
+push constant 255
+and
+call Location2d.new 2
+pop this 3
+push argument 0
+push constant 3
+and
+push this 5
+add
+pop pointer 1
+push that 0
+call Direction2d.new 1
+pop this 4
+push this 3
+push this 4
+push this 0
+call Game.new 3
+pop this 1
+push this 1
+push constant 512
+push constant 256
+call FiniteGame.new 3
+pop this 2
+push pointer 0
+return
+function Random2d.random 1
+push argument 0
+pop pointer 0
+push this 4
+push this 3
+call Location2d.getX 1
+push this 3
+call Location2d.getY 1
+add
+push constant 3
+and
+push this 5
+add
+pop pointer 1
+push that 0
+call Direction2d.setDirection 2
+pop temp 0
+push constant 0
+pop local 0
+label WHILE_EXP0
+push local 0
+push constant 16383
+lt
+not
+if-goto WHILE_END0
+push this 2
+call FiniteGame.step 1
+pop temp 0
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP0
+label WHILE_END0
+push this 0
+call Display2d.clear 1
+pop temp 0
+push this 3
+call Location2d.getX 1
+push this 3
+call Location2d.getY 1
+call Location2d.new 2
+return

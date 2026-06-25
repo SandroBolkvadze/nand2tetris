@@ -1,0 +1,43 @@
+class Random2d {
+    field Display2d display;
+    field Game game;
+    field FiniteGame finiteGame;
+    field Location2d location;
+    field Direction2d direction;
+    field Array directions;
+    
+    constructor Random2d new(int seed) {
+        let directions = Array.new(4);
+        let directions[0] = 76;
+        let directions[1] = 85;
+        let directions[2] = 82;
+        let directions[3] = 68;
+
+        let display = Display2d.new(true);
+        let location = Location2d.new(seed & 511, seed & 255);
+        let direction = Direction2d.new(directions[seed & 3]);
+        
+        let game = Game.new(location, direction, display);
+        let finiteGame = FiniteGame.new(game, 512, 256);    
+
+        return this;
+    }
+
+    method Location2d random() {
+        var int i;
+
+        do direction.setDirection(directions[(location.getX() + location.getY()) & 3]);
+
+        let i = 0;
+        while (i < 16383) {
+            do finiteGame.step();
+            let i = i + 1;
+        }
+        do display.clear();
+
+        return Location2d.new(location.getX(), location.getY());
+    }
+
+}
+
+

@@ -1,0 +1,68 @@
+class FiniteGame {
+    field Game game;
+    field int width, height;
+
+    constructor FiniteGame new(Game startGame, int maxWidth, int maxHeight) {
+        let game = startGame;
+        let width = maxWidth;
+        let height = maxHeight;
+
+        do adjustLocation(game.getLocation2d()); 
+
+        return this;
+    }
+
+    method void step() {
+        do game.step();
+        do adjustLocation(game.getLocation2d());
+        return;
+    }
+
+    method void adjustLocation(Location2d location) {
+        if (location.getX() < 0) {
+            do location.setX(width - 1);
+        }
+
+        if (location.getX() > (width - 1)) {
+            do location.setX(0);
+        }
+
+        if (location.getY() < 0) {
+            do location.setY(height - 1);
+        }
+
+        if (location.getY() > (height - 1)) {
+            do location.setY(0);
+        }
+        return;
+    }
+
+    method void setLocation2d(Location2d newLocation) {
+        do game.setLocation2d(newLocation);
+        return;
+    }
+
+    method void setDirection(Direction2d newDirection) {
+        do game.setDirection(newDirection);
+        return;
+    }
+
+    method Location2d getLocation2d() {
+        return game.getLocation2d();
+    }
+
+    method Direction2d getDirection() {
+        return game.getDirection();
+    }
+
+    method Game getGame() {
+        return game;
+    }
+
+    method void dispose() {
+        do game.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+
+}

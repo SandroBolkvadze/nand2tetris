@@ -1,0 +1,41 @@
+class Location2d {
+
+    field int locX, locY;
+
+    constructor Location2d new(int x, int y) {
+        let locX = x;
+        let locY = y;
+        return this;
+    }
+
+    method int getX() {
+        return locX;
+    } 
+
+    method int getY() {
+        return locY;
+    } 
+    
+    method void setX(int x) {
+        let locX = x;
+        return;
+    } 
+
+    method void setY(int y) {
+        let locY = y;
+        return;
+    }
+
+    method void add(Location2d other) {
+        let locX = locX + other.getX();
+        let locY = locY + other.getY();
+        return;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+}
+
