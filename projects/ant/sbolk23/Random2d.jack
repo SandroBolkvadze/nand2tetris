@@ -33,7 +33,8 @@ class Random2d {
             do finiteGame.step();
             let i = i + 1;
         }
-        do display.clear();
+        
+        // do display.clear();
 
         return Location2d.new(location.getX(), location.getY());
     }

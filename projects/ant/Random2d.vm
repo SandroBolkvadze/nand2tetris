@@ -104,9 +104,6 @@ add
 pop local 0
 goto WHILE_EXP0
 label WHILE_END0
-push this 0
-call Display2d.clear 1
-pop temp 0
 push this 3
 call Location2d.getX 1
 push this 3
